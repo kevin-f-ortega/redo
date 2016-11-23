@@ -282,7 +282,7 @@ class File(object):
             return STAMP_DIR
         else:
             # a "unique identifier" stamp for a regular file
-            return str((st.st_ctime, st.st_mtime, st.st_size, st.st_ino))
+            return str((st.st_mtime, st.st_size, st.st_ino))
 
     def nicename(self):
         return relpath(os.path.join(vars.BASE, self.name), vars.STARTDIR)
