@@ -1,12 +1,9 @@
 #!/bin/sh -e
 
 # ----------------------------------------------------------------------
-# clean.do
+# defs.sh
 # ----------------------------------------------------------------------
 
-. ./defs.sh
-
-doall rm '*.pyc' _version.py vars gitvars
-rm_tmp
-
-
+DIR=`pwd`
+REDO_ROOT=$DIR/..
+. $REDO_ROOT/defs-root.sh
