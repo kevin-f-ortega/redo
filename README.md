@@ -14,9 +14,8 @@ My goals with this fork are the following:
 
 1. To be backwards compatible with, and provide a drop-in replacement for, apenwarr redo.
 
-2. As development on apenwarr redo seems to have stopped, to continue
-   development where apenwarr redo leaves off, including enhancements and bug
-   fixes.
+2. As development on apenwarr `redo` seems to have stopped, to continue
+   development, including enhancements and bug fixes.
 
 To date, this repository provides the following improvements to apenwarr redo:
 
