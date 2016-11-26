@@ -2,7 +2,7 @@
 
 # ---------------------------------------------------------------------- 
 # general.sh
-# general definitions
+# General definitions
 # ---------------------------------------------------------------------- 
 
 # Eval; print command to stderr if in debug mode
