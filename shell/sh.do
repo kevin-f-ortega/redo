@@ -1,5 +1,3 @@
-#!/bin/sh -e
-
 # ----------------------------------------------------------------------
 # sh.do
 # Find a good shell for running .do files
@@ -62,10 +60,10 @@ rm -rf tmp
 
 if [ -n "$GOOD" ]; then
 	echo "Selected perfect shell: $GOOD"
-	ln -fs $GOOD sh
+	ln -fs $GOOD $3
 elif [ -n "$WARN" ]; then
 	echo "Selected mostly good shell: $WARN"
-	ln -fs $WARN sh
+	ln -fs $WARN $3
 else
 	echo "No good shells found!  Maybe install dash, bash, or zsh."
 	exit 13
