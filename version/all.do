@@ -1,12 +1,7 @@
 #!/bin/sh -e
 
 # ----------------------------------------------------------------------
-# clean.do
+# all.do
 # ----------------------------------------------------------------------
 
-. ./defs.sh
-
-doall rm '*.pyc' version.py gitvars
-rm_tmp
-
-
+redo-ifchange vars version.py

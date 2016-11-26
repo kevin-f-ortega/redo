@@ -1,9 +1,10 @@
 #!/bin/sh -e
 
 # ----------------------------------------------------------------------
-# test.do
+# clean.do
 # ----------------------------------------------------------------------
 
-redo-ifchange all
-redo t/all
-[ -n "$DO_BUILT" ] || echo "Don't forget to test 'minimal/do test'" >&2
+. ./defs.sh
+
+doall rm '*.pyc' version.py vars gitvars
+rm_tmp
