@@ -12,7 +12,7 @@ mkdir -p tmp
 GOOD=
 WARN=
 
-# Note: list low-functionality, maximally POSIX-like shells before more
+# List low-functionality, maximally POSIX-like shells before more
 # powerful ones.  We want weaker shells to take precedence, as long as they
 # pass the tests, because weaker shells are more likely to point out when you
 # use some non-portable feature.
@@ -29,7 +29,7 @@ for sh in dash sh /usr/xpg4/bin/sh ash posh mksh ksh ksh88 ksh93 pdksh \
 	ln -s $FOUND tmp/sh
 	
 	set +e
-	( cd $REDO_ROOT/tests && $REDO_ROOT/shell/tmp/sh shelltest.od >shelltest.tmp 2>&1 )
+	( cd $REDO_ROOT/tests && $DIR/tmp/sh shelltest.od >shelltest.tmp 2>&1 )
 	RV=$?
 	set -e
 	
