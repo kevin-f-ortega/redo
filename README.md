@@ -28,6 +28,8 @@ Once it is done, I plan to dig further into the code and add features to it
 
 This repository contains the following items:
 
+* `bash_completion.d`: `bash` completion rules for `redo`.
+
 * `bin`: Rules for generating the "binary files" of the `redo` tool suite
 (really, they are executable python files).
 
@@ -40,9 +42,6 @@ It is useful for running `.do` files on systems where `redo`
 is not available.
 In particular, you run `do` on the build system in this repository
 when you install `redo` (see below).
-
-* `etc`: `bash` completion rules that you can copy to
-`etc/bash_completion.d`.
 
 * `lib`: The "library files" for the `redo` tool suite (they are python files).
 
