@@ -1,10 +1,16 @@
 #!/bin/sh -e
 
 # ----------------------------------------------------------------------
-# all.do
+# install.sh
 # ----------------------------------------------------------------------
 
 . ./defs.sh
 
-subdir_targets redo-ifchange all
-echo "Nothing much to do.  Try 'redo t/all' or 'redo test'" >&2
+exec >&2
+
+vars_require_set LIBDIR
+
+evald $INSTALL -d $LIBDIR
+
+sh sh.sh
+evald cp -R sh $LIBDIR/sh

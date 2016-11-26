@@ -6,7 +6,7 @@
 
 . ./defs.sh
 
-doall rm '*.pyc' version.py vars gitvars
+doall rm '*.pyc' version.py gitvars
 rm_tmp
 
 

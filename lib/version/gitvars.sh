@@ -1,7 +1,12 @@
-redo-ifchange gitvars.pre prodname
+#!/bin/sh -e
+
+# ---------------------------------------------------------------------- 
+# gitvars.sh
+# Generate git vars
+# ---------------------------------------------------------------------- 
 
 read PROD <prodname
-exec >$3
+exec >gitvars
 
 # Fix each line from gitvars.pre where git may or may not have already
 # substituted the variables.  If someone generated a tarball with 'git archive',
@@ -13,7 +18,6 @@ while read line; do
 	x=${line#\$Format:}  # remove prefix
 	if [ "$x" != "$line" ]; then
 		# git didn't substitute it
-		redo-always   # git this from the git repo
 		x=${x%\$}  # remove trailing $
 		if [ "$x" = "%d" ]; then
 			tag=$(git describe --match="$PROD-*")
@@ -24,5 +28,3 @@ while read line; do
 	fi
 	echo "$x"
 done <gitvars.pre
-
-redo-stamp <$3

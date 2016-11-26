@@ -1,14 +1,16 @@
 #!/bin/sh -e
 
 # ----------------------------------------------------------------------
-# vars.do
+# version.py.sh
 # ---------------------------------------------------------------------- 
 
-redo-ifchange gitvars prodname
+. ./defs.sh
+
+evald sh gitvars.sh
 
 read PROD <prodname
 
-exec <gitvars
+exec <gitvars >version.py
 read COMMIT
 read NAMES
 read DATE

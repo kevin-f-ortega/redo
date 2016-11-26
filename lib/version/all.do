@@ -4,5 +4,6 @@
 # all.do
 # ----------------------------------------------------------------------
 
-redo-ifchange vars version.py
+. ./defs.sh
 
+evald sh version.py.sh

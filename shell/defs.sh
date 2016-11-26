@@ -1,10 +1,9 @@
 #!/bin/sh -e
 
 # ----------------------------------------------------------------------
-# all.do
+# defs.sh
 # ----------------------------------------------------------------------
 
-. ./defs.sh
-
-subdir_targets redo-ifchange all
-echo "Nothing much to do.  Try 'redo t/all' or 'redo test'" >&2
+DIR=`pwd`
+REDO_ROOT=$DIR/..
+. $REDO_ROOT/defs-root.sh
