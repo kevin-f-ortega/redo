@@ -14,7 +14,7 @@ do
 	module=`echo $bin | sed -e 's,-,_,g'`
   echo "#!/usr/bin/python
 import sys
-sys.path.insert(0, '"$LIBDIR"'))
+sys.path.insert(0, '"$LIBDIR"')
 import $module" > bin.py
 	evald $INSTALL -m 0755 bin.py $BINDIR/$bin
 done
