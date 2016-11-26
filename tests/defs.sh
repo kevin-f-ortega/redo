@@ -1,9 +1,9 @@
+#!/bin/sh -e
+
 # ----------------------------------------------------------------------
-# clean.do
+# defs.sh
 # ----------------------------------------------------------------------
 
-. ./defs.sh
-
-subdir_targets redo clean
-rm -f broken shellfile
-rm_tmp
+DIR=`pwd`
+REDO_ROOT=$DIR/..
+. $REDO_ROOT/defs-root.sh

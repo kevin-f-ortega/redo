@@ -4,4 +4,7 @@
 # all.do
 # ----------------------------------------------------------------------
 
-/bin/ls *.md tests/*.md | sed 's/\.md/.1/' | xargs redo-ifchange
+. ./defs.sh
+
+/bin/ls *.md | sed 's/\.md/.1/' | xargs redo-ifchange
+subdir_targets redo-ifchange all

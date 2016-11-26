@@ -1,9 +1,8 @@
+#!/bin/sh -e
+
 # ----------------------------------------------------------------------
-# clean.do
+# test.do
 # ----------------------------------------------------------------------
 
-. ./defs.sh
-
-subdir_targets redo clean
-rm -f broken shellfile
-rm_tmp
+redo-always
+/bin/ls *.md | sed 's/\.md/.1/' | xargs redo-ifchange

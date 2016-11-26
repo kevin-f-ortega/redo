@@ -1,8 +1,9 @@
 #!/bin/sh -e
 
 # ----------------------------------------------------------------------
-# all.do
+# defs.sh
 # ----------------------------------------------------------------------
 
-redo-always
-/bin/ls *.md | sed 's/\.md/.1/' | xargs redo-ifchange
+DIR=`pwd`
+REDO_ROOT=$DIR/../..
+. $REDO_ROOT/defs-root.sh
