@@ -7,10 +7,7 @@
 # Canonicalize path names
 canonicalize()
 {
-  here=`pwd`
-  cd $1
-  pwd
-  cd $here
+  ( cd $1; pwd )
 }
 
 export REDO_ROOT=`canonicalize $REDO_ROOT`
