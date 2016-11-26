@@ -31,7 +31,7 @@ for sh in dash sh /usr/xpg4/bin/sh ash posh mksh ksh ksh88 ksh93 pdksh \
 	ln -s $FOUND tmp/sh
 	
 	set +e
-	( cd $REDO_ROOT/t && $REDO_ROOT/shell/tmp/sh shelltest.od >shelltest.tmp 2>&1 )
+	( cd $REDO_ROOT/tests && $REDO_ROOT/shell/tmp/sh shelltest.od >shelltest.tmp 2>&1 )
 	RV=$?
 	set -e
 	
@@ -44,8 +44,8 @@ for sh in dash sh /usr/xpg4/bin/sh ash posh mksh ksh ksh88 ksh93 pdksh \
 		crash=$line
 		[ "$line" = "$stripw" ] || msgs="$msgs W$stripw"
 		[ "$line" = "$stripf" ] || msgs="$msgs F$stripf"
-	done <$REDO_ROOT/t/shelltest.tmp
-	rm -f $REDO_ROOT/t/shelltest.tmp
+	done <$REDO_ROOT/tests/shelltest.tmp
+	rm -f $REDO_ROOT/tests/shelltest.tmp
 	msgs=${msgs# }
 	crash=${crash##*:}
 	crash=${crash# }

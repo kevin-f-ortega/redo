@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+# ======================================================================
+# md2man.py
+# Convert Markdown documents to man pages
+# ======================================================================
+
 import sys, os, markdown, re
 from BeautifulSoup import BeautifulSoup
 

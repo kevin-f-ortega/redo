@@ -4,8 +4,5 @@
 # all.do
 # ----------------------------------------------------------------------
 
-/bin/ls *.md t/*.md |
-sed 's/\.md/.1/' | 
-xargs redo-ifchange
-
 redo-always
+/bin/ls *.md tests/*.md | sed 's/\.md/.1/' | xargs redo-ifchange
