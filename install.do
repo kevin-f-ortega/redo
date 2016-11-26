@@ -1,3 +1,5 @@
+exit 0
+
 exec >&2
 redo-ifchange _all
 

@@ -11,3 +11,5 @@ rm -f fail
 touch fail
 ../flush-cache
 redo-ifchange fail >&/dev/null || exit 55  # expected to pass
+
+rm -f fail
