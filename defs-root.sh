@@ -12,7 +12,7 @@ canonicalize()
 
 export REDO_ROOT=`canonicalize $REDO_ROOT`
 
-files=$REDO_ROOT/Defs/*.sh
+files=$REDO_ROOT/defs/*.sh
 
 redo-ifchange $DIR/defs.sh $files
 
