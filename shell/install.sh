@@ -11,6 +11,5 @@ exec >&2
 vars_require_set LIBDIR
 
 evald $INSTALL -d $LIBDIR
-
-sh sh.sh
+evald sh sh.sh
 evald cp -R sh $LIBDIR/sh
