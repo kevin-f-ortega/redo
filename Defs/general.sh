@@ -31,7 +31,7 @@ doall()
   fi
   cmd=$1
   shift
-  for arg in "$@"
+  for arg in $@
   do
     for file in `find . -maxdepth 1 -name "$arg"`
     do
@@ -43,5 +43,5 @@ doall()
 # Remove temporary files
 rm_tmp()
 {
-  evald "doall rm '*~' '.*~'"
+  evald doall rm '*~' '.*~'
 }
