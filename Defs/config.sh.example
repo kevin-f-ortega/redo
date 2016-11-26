@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+# ----------------------------------------------------------------------
+# config.sh.example 
+# Copy this directory to config.sh and edit as necessary
+# ---------------------------------------------------------------------- 
+
+export INSTALL=install
+export DESTDIR=/
+export PREFIX=usr
+export MANDIR=$DESTDIR$PREFIX/share/man
+export DOCDIR=$DESTDIR$PREFIX/share/doc/redo
+export BINDIR=$DESTDIR$PREFIX/bin
+export LIBDIR=$DESTDIR$PREFIX/lib/redo
+

@@ -4,5 +4,5 @@
 # all.do
 # ----------------------------------------------------------------------
 
-redo-ifchange vars _version.py
+redo-ifchange vars version.py
 
