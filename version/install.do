@@ -1,7 +1,13 @@
 #!/bin/sh -e
 
 # ----------------------------------------------------------------------
-# all.do
+# install.do
+# Install version
 # ----------------------------------------------------------------------
 
-/bin/ls *.md tests/*.md | sed 's/\.md/.1/' | xargs redo-ifchange
+. ./defs.sh
+
+redo-ifchange version.py
+
+evald $INSTALL -d $LIBDIR/version
+evald $INSTALL -m 0644 version.py $LIBDIR/version.py

@@ -43,5 +43,5 @@ doall()
 # Remove temporary files
 rm_tmp()
 {
-  evald doall rm '*~' '.*~' '*.tmp'
+  doall 'rm -R' '*~' '.*~' '*.tmp' '.do_built*'
 }
