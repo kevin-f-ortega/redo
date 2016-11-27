@@ -4,7 +4,7 @@
 # ======================================================================
 
 import os
-from atoi import atoi
+from helpers import atoi
 
 if not os.environ.get('REDO'):
     import sys

@@ -1,8 +1,24 @@
+# ======================================================================
+# helpers.py
+# Helpers for redo implementation
+# ======================================================================
+
 import os, errno, fcntl
-from atoi import atoi
+
+def atoi(v):
+    """
+    Convert ascii to integer
+    """
+    try:
+        return int(v or 0)
+    except ValueError:
+        return 0
 
 
 def join(between, l):
+    """
+    join between and l
+    """
     return between.join(l)
 
 

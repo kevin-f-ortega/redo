@@ -1,3 +1,8 @@
+# ====================================================================== 
+# state.py
+# Redo build state
+# ====================================================================== 
+
 import sys, os, errno, glob, stat, fcntl, sqlite3
 import vars
 from helpers import unlink, close_on_exec, join

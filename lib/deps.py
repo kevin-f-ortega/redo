@@ -1,3 +1,8 @@
+# ======================================================================
+# deps.py
+# Compute dependences
+# ======================================================================
+
 import sys, os
 import vars, state, builder
 from log import debug

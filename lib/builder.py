@@ -1,8 +1,118 @@
+# ======================================================================
+# builder.py
+# Build redo targets
+# ======================================================================
+
 import sys, os, errno, stat
 import vars, jobs, state
 from helpers import unlink, close_on_exec, join
 from log import log, log_, debug, debug2, err, warn
 
+# ---------------------------------------------------------------------- 
+# Public interface
+# ---------------------------------------------------------------------- 
+
+class ImmediateReturn(Exception):
+    def __init__(self, rv):
+        Exception.__init__(self, "immediate return with exit code %d" % rv)
+        self.rv = rv
+
+
+def main(targets, shouldbuildfunc):
+    retcode = [0]  # a list so that it can be reassigned from done()
+    if vars.SHUFFLE:
+        import random
+        random.shuffle(targets)
+
+    locked = []
+
+    def done(t, rv):
+        if rv:
+            retcode[0] = 1
+
+    # In the first cycle, we just build as much as we can without worrying
+    # about any lock contention.  If someone else has it locked, we move on.
+    seen = {}
+    lock = None
+    for t in targets:
+        if t in seen:
+            continue
+        seen[t] = 1
+        if not jobs.has_token():
+            state.commit()
+        jobs.get_token(t)
+        if retcode[0] and not vars.KEEP_GOING:
+            break
+        if not state.check_sane():
+            err('.redo directory disappeared; cannot continue.\n')
+            retcode[0] = 205
+            break
+        f = state.File(name=t)
+        lock = state.Lock(f.id)
+        if vars.UNLOCKED:
+            lock.owned = True
+        else:
+            lock.trylock()
+        if not lock.owned:
+            if vars.DEBUG_LOCKS:
+                log('%s (locked...)\n' % _nice(t))
+            locked.append((f.id,t))
+        else:
+            BuildJob(t, f, lock, shouldbuildfunc, done).start()
+
+    del lock
+
+    # Now we've built all the "easy" ones.  Go back and just wait on the
+    # remaining ones one by one.  There's no reason to do it any more
+    # efficiently, because if these targets were previously locked, that
+    # means someone else was building them; thus, we probably won't need to
+    # do anything.  The only exception is if we're invoked as redo instead
+    # of redo-ifchange; then we have to redo it even if someone else already
+    # did.  But that should be rare.
+    while locked or jobs.running():
+        state.commit()
+        jobs.wait_all()
+        # at this point, we don't have any children holding any tokens, so
+        # it's okay to block below.
+        if retcode[0] and not vars.KEEP_GOING:
+            break
+        if locked:
+            if not state.check_sane():
+                err('.redo directory disappeared; cannot continue.\n')
+                retcode[0] = 205
+                break
+            fid,t = locked.pop(0)
+            lock = state.Lock(fid)
+            lock.trylock()
+            while not lock.owned:
+                if vars.DEBUG_LOCKS:
+                    warn('%s (WAITING)\n' % _nice(t))
+                # this sequence looks a little silly, but the idea is to
+                # give up our personal token while we wait for the lock to
+                # be released; but we should never run get_token() while
+                # holding a lock, or we could cause deadlocks.
+                jobs.release_mine()
+                lock.waitlock()
+                lock.unlock()
+                jobs.get_token(t)
+                lock.trylock()
+            assert(lock.owned)
+            if vars.DEBUG_LOCKS:
+                log('%s (...unlocked!)\n' % _nice(t))
+            if state.File(name=t).is_failed():
+                err('%s: failed in another thread\n' % _nice(t))
+                retcode[0] = 2
+                lock.unlock()
+            else:
+                BuildJob(t, state.File(id=fid), lock,
+                         shouldbuildfunc, done).start()
+    state.commit()
+    return retcode[0]
+
+
+# ----------------------------------------------------------------------
+# Private members
+# ----------------------------------------------------------------------
 
 def _default_do_files(filename):
     l = filename.split('.')
@@ -59,12 +169,6 @@ def _try_stat(filename):
             return None
         else:
             raise
-
-
-class ImmediateReturn(Exception):
-    def __init__(self, rv):
-        Exception.__init__(self, "immediate return with exit code %d" % rv)
-        self.rv = rv
 
 
 class BuildJob:
@@ -294,93 +398,3 @@ class BuildJob:
             self.lock.unlock()
 
 
-def main(targets, shouldbuildfunc):
-    retcode = [0]  # a list so that it can be reassigned from done()
-    if vars.SHUFFLE:
-        import random
-        random.shuffle(targets)
-
-    locked = []
-
-    def done(t, rv):
-        if rv:
-            retcode[0] = 1
-
-    # In the first cycle, we just build as much as we can without worrying
-    # about any lock contention.  If someone else has it locked, we move on.
-    seen = {}
-    lock = None
-    for t in targets:
-        if t in seen:
-            continue
-        seen[t] = 1
-        if not jobs.has_token():
-            state.commit()
-        jobs.get_token(t)
-        if retcode[0] and not vars.KEEP_GOING:
-            break
-        if not state.check_sane():
-            err('.redo directory disappeared; cannot continue.\n')
-            retcode[0] = 205
-            break
-        f = state.File(name=t)
-        lock = state.Lock(f.id)
-        if vars.UNLOCKED:
-            lock.owned = True
-        else:
-            lock.trylock()
-        if not lock.owned:
-            if vars.DEBUG_LOCKS:
-                log('%s (locked...)\n' % _nice(t))
-            locked.append((f.id,t))
-        else:
-            BuildJob(t, f, lock, shouldbuildfunc, done).start()
-
-    del lock
-
-    # Now we've built all the "easy" ones.  Go back and just wait on the
-    # remaining ones one by one.  There's no reason to do it any more
-    # efficiently, because if these targets were previously locked, that
-    # means someone else was building them; thus, we probably won't need to
-    # do anything.  The only exception is if we're invoked as redo instead
-    # of redo-ifchange; then we have to redo it even if someone else already
-    # did.  But that should be rare.
-    while locked or jobs.running():
-        state.commit()
-        jobs.wait_all()
-        # at this point, we don't have any children holding any tokens, so
-        # it's okay to block below.
-        if retcode[0] and not vars.KEEP_GOING:
-            break
-        if locked:
-            if not state.check_sane():
-                err('.redo directory disappeared; cannot continue.\n')
-                retcode[0] = 205
-                break
-            fid,t = locked.pop(0)
-            lock = state.Lock(fid)
-            lock.trylock()
-            while not lock.owned:
-                if vars.DEBUG_LOCKS:
-                    warn('%s (WAITING)\n' % _nice(t))
-                # this sequence looks a little silly, but the idea is to
-                # give up our personal token while we wait for the lock to
-                # be released; but we should never run get_token() while
-                # holding a lock, or we could cause deadlocks.
-                jobs.release_mine()
-                lock.waitlock()
-                lock.unlock()
-                jobs.get_token(t)
-                lock.trylock()
-            assert(lock.owned)
-            if vars.DEBUG_LOCKS:
-                log('%s (...unlocked!)\n' % _nice(t))
-            if state.File(name=t).is_failed():
-                err('%s: failed in another thread\n' % _nice(t))
-                retcode[0] = 2
-                lock.unlock()
-            else:
-                BuildJob(t, state.File(id=fid), lock,
-                         shouldbuildfunc, done).start()
-    state.commit()
-    return retcode[0]
