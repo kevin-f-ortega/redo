@@ -6,10 +6,6 @@
 # ---------------------------------------------------------------------- 
 
 export INSTALL=install
-export DESTDIR=/
-export PREFIX=usr
-export MANDIR=$DESTDIR$PREFIX/share/man
-export DOCDIR=$DESTDIR$PREFIX/share/doc/redo
-export BINDIR=$DESTDIR$PREFIX/bin
-export LIBDIR=$DESTDIR$PREFIX/lib/redo
-
+export MANDIR=$REDO_ROOT/installdir/share/man
+export BINDIR=$REDO_ROOT/installdir/bin
+export LIBDIR=$REDO_ROOT/installdir/lib/redo
