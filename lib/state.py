@@ -20,7 +20,7 @@ STAMP_DIR='dir'     # the stamp of a directory; mtime is unhelpful
 STAMP_MISSING='0'   # the stamp of a nonexistent file
 
 # ----------------------------------------------------------------------
-# Private global variables
+# Private variables
 # ----------------------------------------------------------------------
 
 _db = None
@@ -33,50 +33,8 @@ _file_cols = ['rowid', 'name', 'is_generated', 'is_override',
 _locks = {}
 
 # ----------------------------------------------------------------------
-# Public interface
+# Public classes
 # ----------------------------------------------------------------------
-
-def init():
-    db()
-
-
-def commit():
-    if _insane:
-        return
-    global _wrote
-    if _wrote:
-        db().commit()
-        _wrote = 0
-
-def check_sane():
-    global _insane, _writable
-    if not _insane:
-        _insane = not os.path.exists('%s/.redo' % vars.BASE)
-    return not _insane
-
-
-def relpath(t, base):
-    global _cwd
-    if not _cwd:
-        _cwd = os.getcwd()
-    t = os.path.normpath(os.path.join(_cwd, t))
-    base = os.path.normpath(base)
-    tparts = t.split('/')
-    bparts = base.split('/')
-    for tp,bp in zip(tparts,bparts):
-        if tp != bp:
-            break
-        tparts.pop(0)
-        bparts.pop(0)
-    while bparts:
-        tparts.insert(0, '..')
-        bparts.pop(0)
-    return join('/', tparts)
-
-
-def warn_override(name):
-    warn('%s - you modified it; skipping\n' % name)
-
 
 class File(object):
     # use this mostly to avoid accidentally assigning to typos
@@ -275,6 +233,52 @@ class Lock:
         self.owned = False
 
         
+# ----------------------------------------------------------------------
+# Public functions
+# ----------------------------------------------------------------------
+
+def init():
+    db()
+
+
+def commit():
+    if _insane:
+        return
+    global _wrote
+    if _wrote:
+        db().commit()
+        _wrote = 0
+
+def check_sane():
+    global _insane, _writable
+    if not _insane:
+        _insane = not os.path.exists('%s/.redo' % vars.BASE)
+    return not _insane
+
+
+def relpath(t, base):
+    global _cwd
+    if not _cwd:
+        _cwd = os.getcwd()
+    t = os.path.normpath(os.path.join(_cwd, t))
+    base = os.path.normpath(base)
+    tparts = t.split('/')
+    bparts = base.split('/')
+    for tp,bp in zip(tparts,bparts):
+        if tp != bp:
+            break
+        tparts.pop(0)
+        bparts.pop(0)
+    while bparts:
+        tparts.insert(0, '..')
+        bparts.pop(0)
+    return join('/', tparts)
+
+
+def warn_override(name):
+    warn('%s - you modified it; skipping\n' % name)
+
+
 # ----------------------------------------------------------------------
 # Private functions
 # ----------------------------------------------------------------------
