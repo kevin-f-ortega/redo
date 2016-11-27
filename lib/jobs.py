@@ -82,16 +82,17 @@ def put_token():
     Put one token held by this process on the pipe
     """
     global _mytokens
-    assert(_mytokens >= 1)
+    assert(_mytokens == 1)
     os.write(_pipe[1], 't')
-    _mytokens -= 1
+    _mytokens = 0
 
 
 def has_token():
     """
     @return Whether this process has a token
     """
-    if _mytokens >= 1:
+    _assert_mytokens_valid()
+    if _mytokens == 1:
         return True
 
 
@@ -101,21 +102,20 @@ def get_token(reason):
     @param reason The reason for the token
     """
     global _mytokens
-    assert _mytokens >= 0 and _mytokens <= 1, "_mtokens=%d\n" % _mytokens
     # Ensure the job state is initialized
     setup(1)
     while 1:
-        if _mytokens >= 1:
+        _assert_mytokens_valid()
+        if _mytokens == 1:
             # We already have a token
             _debug("_mytokens is %d\n" % _mytokens)
             assert(_mytokens == 1)
             _debug('(%r) used my own token...\n' % reason)
             break
-        assert(_mytokens < 1)
         _debug('(%r) waiting for tokens...\n' % reason)
         # Wait for internal or external work to become available
         wait(external=1)
-        assert _mytokens >= 0 and _mytokens <= 1, "_mtokens=%d\n" % _mytokens
+        _assert_mytokens_valid()
         if _mytokens == 1:
             # Internal work
             break
@@ -128,7 +128,7 @@ def get_token(reason):
                 _mytokens += 1
                 _debug('(%r) got a token (%r).\n' % (reason, b))
                 break
-    assert _mytokens >= 0 and _mytokens <= 1, "_mtokens=%d\n" % _mytokens
+    _assert_mytokens_valid()
 
 
 def running():
@@ -173,11 +173,10 @@ def force_return_tokens():
 
 def start_job(reason, jobfunc, donefunc):
     global _mytokens
-    assert(_mytokens <= 1)
+    _assert_mytokens_valid()
     get_token(reason)
-    assert(_mytokens >= 1)
     assert(_mytokens == 1)
-    _mytokens -= 1
+    _mytokens = 0
     r,w = _make_pipe(50)
     pid = os.fork()
     if pid == 0:
@@ -305,4 +304,6 @@ def _pre_job(r, w, pfn):
     if pfn:
         pfn()
 
+def _assert_mytokens_valid():
+    assert _mytokens >= 0 and _mytokens <= 1, "_mytokens=%d\n" % _mytokens
 
