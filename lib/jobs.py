@@ -12,12 +12,12 @@ from helpers import atoi, close_on_exec
 
 # The maximum number of running jobs across all processes
 _toplevel = 0
-# The number of tokens held by the current process
-_mytokens = 1
+# Whether this process has a token
+_has_token = True
 # A pair of (read, write) file descriptors for passing tokens between processes
-_pipe = None
+_external_pipe = None
 # The queue of jobs created by this process and waiting to run
-_waitfds = {}
+_internal_fds = {}
 
 # ----------------------------------------------------------------------
 # Private classes
@@ -44,8 +44,8 @@ def setup(maxjobs):
     """
     Initialize the jobs state
     """
-    global _pipe, _toplevel
-    if _pipe:
+    global _external_pipe, _toplevel
+    if _external_pipe:
         return  # already set up
     _debug('setup(%d)\n' % maxjobs)
     flags = ' ' + os.getenv('MAKEFLAGS', '') + ' '
@@ -67,33 +67,31 @@ def setup(maxjobs):
                 raise ValueError('broken --jobserver-fds from make; prefix your Makefile rule with a "+"')
             else:
                 raise
-        _pipe = (a,b)
-    if maxjobs and not _pipe:
+        _external_pipe = (a,b)
+    if maxjobs and not _external_pipe:
         # need to start a new server
         _toplevel = maxjobs
-        _pipe = _make_pipe(100)
-        _release(maxjobs-1)
+        _external_pipe = _make_pipe(100)
+        _put_tokens(maxjobs-1)
         os.putenv('MAKEFLAGS',
                   '%s --jobserver-fds=%d,%d -j' % (os.getenv('MAKEFLAGS'),
-                                                    _pipe[0], _pipe[1]))
+                                                    _external_pipe[0], _external_pipe[1]))
 
 def put_token():
     """
-    Put one token held by this process on the pipe
+    Put the token held by this process on the pipe
     """
-    global _mytokens
-    assert(_mytokens == 1)
-    os.write(_pipe[1], 't')
-    _mytokens = 0
+    global _has_token
+    assert(_has_token)
+    os.write(_external_pipe[1], 't')
+    _has_token = False
 
 
 def has_token():
     """
     @return Whether this process has a token
     """
-    _assert_mytokens_valid()
-    if _mytokens == 1:
-        return True
+    return _has_token
 
 
 def get_token(reason):
@@ -101,82 +99,88 @@ def get_token(reason):
     Get a token
     @param reason The reason for the token
     """
-    global _mytokens
+    global _has_token
     # Ensure the job state is initialized
     setup(1)
+#    if not _has_token:
+#        _debug('(%r) waiting for tokens...\n' % reason)
+#        # Wait for internal or external work to become available
+#        wait(external=True)
+#        if not _has_token:
+#            # External work
+#            b = _try_read(_external_pipe[0], 1)
+#            if b == None:
+#                raise Exception('unexpected EOF on token read')
+#            _has_token = True
+#            _debug('(%r) got a token (%r).\n' % (reason, b))
     while 1:
-        _assert_mytokens_valid()
-        if _mytokens == 1:
+        if _has_token:
             # We already have a token
-            _debug("_mytokens is %d\n" % _mytokens)
-            assert(_mytokens == 1)
             _debug('(%r) used my own token...\n' % reason)
             break
         _debug('(%r) waiting for tokens...\n' % reason)
         # Wait for internal or external work to become available
-        wait(external=1)
-        _assert_mytokens_valid()
-        if _mytokens == 1:
+        wait(external=True)
+        if _has_token:
             # Internal work
             break
         else:
             # External work
-            b = _try_read(_pipe[0], 1)
+            b = _try_read(_external_pipe[0], 1)
             if b == None:
                 raise Exception('unexpected EOF on token read')
             if b:
-                _mytokens += 1
+                _has_token = True
                 _debug('(%r) got a token (%r).\n' % (reason, b))
                 break
-    _assert_mytokens_valid()
 
 
 def running():
     """
     @return Whether this process has pending work
     """
-    return len(_waitfds)
+    return len(_internal_fds)
 
 
 def wait_all():
     _debug("wait_all\n")
     while running():
-        while _mytokens >= 1:
+        if _has_token:
             put_token()
         _debug("wait_all: wait()\n")
         # Wait for internal work
-        wait(external=0)
+        wait(external=False)
     _debug("wait_all: empty list\n")
     get_token('self')  # get my token back
     if _toplevel:
         bb = ''
         while 1:
-            b = _try_read(_pipe[0], 8192)
+            b = _try_read(_external_pipe[0], 8192)
             bb += b
             if not b: break
         if len(bb) != _toplevel-1:
             raise Exception('on exit: expected %d tokens; found only %r' 
                             % (_toplevel-1, len(bb)))
-        os.write(_pipe[1], bb)
+        if _external_pipe:
+          os.write(_external_pipe[1], bb)
 
 
 def force_return_tokens():
-    n = len(_waitfds)
+    n = len(_internal_fds)
     if n:
         _debug('%d tokens left in force_return_tokens\n' % n)
     _debug('returning %d tokens\n' % n)
-    for k in _waitfds.keys():
-        del _waitfds[k]
-    if _pipe:
-        _release(n)
+    for k in _internal_fds.keys():
+        del _internal_fds[k]
+    if _external_pipe:
+        _put_tokens(n)
 
 
 def start_job(reason, jobfunc, donefunc):
-    global _mytokens
-    _assert_mytokens_valid()
+    global _has_token
     get_token(reason)
-    assert(_mytokens == 1)
-    _mytokens = 0
+    assert(_has_token)
+    _has_token = False
     r,w = _make_pipe(50)
     pid = os.fork()
     if pid == 0:
@@ -196,7 +200,7 @@ def start_job(reason, jobfunc, donefunc):
     close_on_exec(r, True)
     os.close(w)
     pd = Job(reason, pid, donefunc)
-    _waitfds[r] = pd
+    _internal_fds[r] = pd
 
 
 # ----------------------------------------------------------------------
@@ -208,27 +212,27 @@ def wait(external):
     Wait for work to become available.
     There are two kinds of work: internal and external.
     Internal work is a job that completes a build that this process started.
-    External work is a token released by another process on _pipe[0].
-    @param external Whether we want external work
+    External work is a token released by another process on _external_pipe[0].
+    @param external Whether we are waiting for external work
     """
-    rfds = _waitfds.keys()
-    if _pipe and external:
-        rfds.append(_pipe[0])
+    rfds = _internal_fds.keys()
+    if _external_pipe and external:
+        rfds.append(_external_pipe[0])
     assert(rfds)
     r,w,x = select.select(rfds, [], [])
-    _debug('_pipe=%r; wfds=%r; readable: %r\n' % (_pipe, _waitfds, r))
+    _debug('_external_pipe=%r; wfds=%r; readable: %r\n' % (_external_pipe, _internal_fds, r))
     for fd in r:
-        if _pipe and fd == _pipe[0]:
+        if _external_pipe and fd == _external_pipe[0]:
             # External work: handle it in the continuation
             pass
         else:
             # Internal work: handle it here
-            pd = _waitfds[fd]
+            pd = _internal_fds[fd]
             _debug("done: %r\n" % pd.name)
             # Get a token
-            _release(1)
+            _put_tokens(1)
             os.close(fd)
-            del _waitfds[fd]
+            del _internal_fds[fd]
             rv = os.waitpid(pd.pid, 0)
             assert(rv[0] == pd.pid)
             _debug("done1: rv=%r\n" % (rv,))
@@ -247,13 +251,22 @@ def _debug(s):
         sys.stderr.write('jobs#%d: %s' % (os.getpid(),s))
     
 
-def _release(n):
-    global _mytokens
-    _debug('release(%d)\n' % n)
-    _mytokens += n
-    if _mytokens > 1:
-        os.write(_pipe[1], 't' * (_mytokens-1))
-        _mytokens = 1
+def _put_tokens(n):
+    """
+    If we already have a token, then put n tokens on the pipe.
+    If we don't have a token and n > 0, then get a token and put n - 1 tokens on the pipe.
+    """
+    global _has_token
+    _debug('_put_tokens(%d)\n' % n)
+    if _has_token:
+        num_to_put=n
+    elif n > 0:
+        _has_token = True
+        num_to_put=n-1
+    else:
+        num_to_put=0
+    if num_to_put > 0:
+        os.write(_external_pipe[1], 't' * num_to_put)
 
 
 def _timeout(sig, frame):
@@ -261,6 +274,11 @@ def _timeout(sig, frame):
 
 
 def _make_pipe(startfd):
+    """
+    Make a pipe
+    @param startfd The minimum file descriptor number
+    @return A pipe (a, b)
+    """
     (a,b) = os.pipe()
     fds = (fcntl.fcntl(a, fcntl.F_DUPFD, startfd),
             fcntl.fcntl(b, fcntl.F_DUPFD, startfd+1))
@@ -286,7 +304,7 @@ def _try_read(fd, n):
     try:
         signal.alarm(1)  # emergency fallback
         try:
-            b = os.read(_pipe[0], 1)
+            b = os.read(_external_pipe[0], 1)
         except OSError, e:
             if e.errno in (errno.EAGAIN, errno.EINTR):
                 # interrupted or it was nonblocking
@@ -298,12 +316,4 @@ def _try_read(fd, n):
         signal.signal(signal.SIGALRM, oldh)
     return b and b or None  # None means EOF
 
-
-def _pre_job(r, w, pfn):
-    os.close(r)
-    if pfn:
-        pfn()
-
-def _assert_mytokens_valid():
-    assert _mytokens >= 0 and _mytokens <= 1, "_mytokens=%d\n" % _mytokens
 
