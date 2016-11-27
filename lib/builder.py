@@ -111,7 +111,7 @@ def main(targets, shouldbuildfunc):
 
 
 # ----------------------------------------------------------------------
-# Private members
+# Private functions
 # ----------------------------------------------------------------------
 
 def _default_do_files(filename):
@@ -170,6 +170,9 @@ def _try_stat(filename):
         else:
             raise
 
+# ----------------------------------------------------------------------
+# Private classes
+# ----------------------------------------------------------------------
 
 class BuildJob:
     def __init__(self, t, sf, lock, shouldbuildfunc, donefunc):

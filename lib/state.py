@@ -8,6 +8,10 @@ import vars
 from helpers import unlink, close_on_exec, join
 from log import warn, err, debug2, debug3
 
+# ----------------------------------------------------------------------
+# Private constants
+# ----------------------------------------------------------------------
+
 SCHEMA_VER=1
 TIMEOUT=60
 
@@ -15,93 +19,25 @@ ALWAYS='//ALWAYS'   # an invalid filename that is always marked as dirty
 STAMP_DIR='dir'     # the stamp of a directory; mtime is unhelpful
 STAMP_MISSING='0'   # the stamp of a nonexistent file
 
-
-def _connect(dbfile):
-    _db = sqlite3.connect(dbfile, timeout=TIMEOUT)
-    _db.execute("pragma synchronous = off")
-    _db.execute("pragma journal_mode = PERSIST")
-    _db.text_factory = str
-    return _db
-
+# ----------------------------------------------------------------------
+# Private global variables
+# ----------------------------------------------------------------------
 
 _db = None
-def db():
-    global _db
-    if _db:
-        return _db
-        
-    dbdir = '%s/.redo' % vars.BASE
-    dbfile = '%s/db.sqlite3' % dbdir
-    try:
-        os.mkdir(dbdir)
-    except OSError, e:
-        if e.errno == errno.EEXIST:
-            pass  # if it exists, that's okay
-        else:
-            raise
+_wrote = 0
+_insane = None
+_cwd = None
+_file_cols = ['rowid', 'name', 'is_generated', 'is_override',
+              'checked_runid', 'changed_runid', 'failed_runid',
+              'stamp', 'csum']
+_locks = {}
 
-    must_create = not os.path.exists(dbfile)
-    if not must_create:
-        _db = _connect(dbfile)
-        try:
-            row = _db.cursor().execute("select version from Schema").fetchone()
-        except sqlite3.OperationalError:
-            row = None
-        ver = row and row[0] or None
-        if ver != SCHEMA_VER:
-            err("state database: discarding v%s (wanted v%s)\n"
-                % (ver, SCHEMA_VER))
-            must_create = True
-            _db = None
-    if must_create:
-        unlink(dbfile)
-        _db = _connect(dbfile)
-        _db.execute("create table Schema "
-                    "    (version int)")
-        _db.execute("create table Runid "
-                    "    (id integer primary key autoincrement)")
-        _db.execute("create table Files "
-                    "    (name not null primary key, "
-                    "     is_generated int, "
-                    "     is_override int, "
-                    "     checked_runid int, "
-                    "     changed_runid int, "
-                    "     failed_runid int, "
-                    "     stamp, "
-                    "     csum)")
-        _db.execute("create table Deps "
-                    "    (target int, "
-                    "     source int, "
-                    "     mode not null, "
-                    "     delete_me int, "
-                    "     primary key (target,source))")
-        _db.execute("insert into Schema (version) values (?)", [SCHEMA_VER])
-        # eat the '0' runid and File id
-        _db.execute("insert into Runid values "
-                    "     ((select max(id)+1 from Runid))")
-        _db.execute("insert into Files (name) values (?)", [ALWAYS])
-
-    if not vars.RUNID:
-        _db.execute("insert into Runid values "
-                    "     ((select max(id)+1 from Runid))")
-        vars.RUNID = _db.execute("select last_insert_rowid()").fetchone()[0]
-        os.environ['REDO_RUNID'] = str(vars.RUNID)
-    
-    _db.commit()
-    return _db
-    
+# ----------------------------------------------------------------------
+# Public interface
+# ----------------------------------------------------------------------
 
 def init():
     db()
-
-
-_wrote = 0
-def _write(q, l):
-    if _insane:
-        return
-    global _wrote
-    _wrote += 1
-    db().execute(q, l)
 
 
 def commit():
@@ -112,8 +48,6 @@ def commit():
         db().commit()
         _wrote = 0
 
-
-_insane = None
 def check_sane():
     global _insane, _writable
     if not _insane:
@@ -121,7 +55,6 @@ def check_sane():
     return not _insane
 
 
-_cwd = None
 def relpath(t, base):
     global _cwd
     if not _cwd:
@@ -145,9 +78,6 @@ def warn_override(name):
     warn('%s - you modified it; skipping\n' % name)
 
 
-_file_cols = ['rowid', 'name', 'is_generated', 'is_override',
-              'checked_runid', 'changed_runid', 'failed_runid',
-              'stamp', 'csum']
 class File(object):
     # use this mostly to avoid accidentally assigning to typos
     __slots__ = ['id'] + _file_cols[1:]
@@ -304,7 +234,6 @@ def files():
 # fcntl.lockf() instead.  Usually this is just a wrapper for fcntl, so it's
 # ok, but it doesn't have F_GETLK, so we can't report which pid owns the lock.
 # The makes debugging a bit harder.  When we someday port to C, we can do that.
-_locks = {}
 class Lock:
     def __init__(self, fid):
         self.owned = False
@@ -344,3 +273,91 @@ class Lock:
                             % self.lockname)
         fcntl.lockf(self.lockfile, fcntl.LOCK_UN, 0, 0)
         self.owned = False
+
+        
+# ----------------------------------------------------------------------
+# Private functions
+# ----------------------------------------------------------------------
+
+def _connect(dbfile):
+    _db = sqlite3.connect(dbfile, timeout=TIMEOUT)
+    _db.execute("pragma synchronous = off")
+    _db.execute("pragma journal_mode = PERSIST")
+    _db.text_factory = str
+    return _db
+
+
+def db():
+    global _db
+    if _db:
+        return _db
+        
+    dbdir = '%s/.redo' % vars.BASE
+    dbfile = '%s/db.sqlite3' % dbdir
+    try:
+        os.mkdir(dbdir)
+    except OSError, e:
+        if e.errno == errno.EEXIST:
+            pass  # if it exists, that's okay
+        else:
+            raise
+
+    must_create = not os.path.exists(dbfile)
+    if not must_create:
+        _db = _connect(dbfile)
+        try:
+            row = _db.cursor().execute("select version from Schema").fetchone()
+        except sqlite3.OperationalError:
+            row = None
+        ver = row and row[0] or None
+        if ver != SCHEMA_VER:
+            err("state database: discarding v%s (wanted v%s)\n"
+                % (ver, SCHEMA_VER))
+            must_create = True
+            _db = None
+    if must_create:
+        unlink(dbfile)
+        _db = _connect(dbfile)
+        _db.execute("create table Schema "
+                    "    (version int)")
+        _db.execute("create table Runid "
+                    "    (id integer primary key autoincrement)")
+        _db.execute("create table Files "
+                    "    (name not null primary key, "
+                    "     is_generated int, "
+                    "     is_override int, "
+                    "     checked_runid int, "
+                    "     changed_runid int, "
+                    "     failed_runid int, "
+                    "     stamp, "
+                    "     csum)")
+        _db.execute("create table Deps "
+                    "    (target int, "
+                    "     source int, "
+                    "     mode not null, "
+                    "     delete_me int, "
+                    "     primary key (target,source))")
+        _db.execute("insert into Schema (version) values (?)", [SCHEMA_VER])
+        # eat the '0' runid and File id
+        _db.execute("insert into Runid values "
+                    "     ((select max(id)+1 from Runid))")
+        _db.execute("insert into Files (name) values (?)", [ALWAYS])
+
+    if not vars.RUNID:
+        _db.execute("insert into Runid values "
+                    "     ((select max(id)+1 from Runid))")
+        vars.RUNID = _db.execute("select last_insert_rowid()").fetchone()[0]
+        os.environ['REDO_RUNID'] = str(vars.RUNID)
+    
+    _db.commit()
+    return _db
+    
+
+def _write(q, l):
+    if _insane:
+        return
+    global _wrote
+    _wrote += 1
+    db().execute(q, l)
+
+

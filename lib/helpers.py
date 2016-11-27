@@ -36,6 +36,9 @@ def unlink(f):
 
 
 def close_on_exec(fd, yes):
+    """
+    Set or clear FD_CLOEXEC for fd
+    """
     fl = fcntl.fcntl(fd, fcntl.F_GETFD)
     fl &= ~fcntl.FD_CLOEXEC
     if yes:
