@@ -21,7 +21,7 @@ apenwarr `redo`.
 **Contributions:** To date, this repository provides the following improvements to 
 apenwarr `redo`:
 
-* Improved and better documented installation procedure.
+* Improved installation procedure.
 
 * Fix for a glitch involving bad symlinks on some systems.
 
