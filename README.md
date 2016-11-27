@@ -21,13 +21,15 @@ apenwarr `redo`.
 **Contributions:** To date, this repository provides the following improvements to 
 apenwarr `redo`:
 
-* Improved installation procedure.
+* Improved the installation procedure.
 
-* Fix for a glitch involving bad symlinks on some systems.
+* Fixed a glitch involving bad symlinks on some systems.
 
-* Fix for a bug that caused spurious warnings about updated files on some systems.
+* Fixed a bug that caused spurious warnings about updated files on some systems.
 
-* Code refactoring and reorganization.
+* Removed the deprecated "old-args" feature.
+
+* Refactored and reorganized the code.
 
 The refactoring is ongoing. 
 Once it is done, I plan to dig further into the code and add features to it
