@@ -50,7 +50,7 @@ def setup(maxjobs):
     """
     global _pipe, _toplevel
     if _pipe:
-        return  # already set up
+        return  # Already set up
     _debug('setup(%d)\n' % maxjobs)
     flags = ' ' + os.getenv('MAKEFLAGS', '') + ' '
     FIND = ' --jobserver-fds='
@@ -110,7 +110,7 @@ def get_token(reason):
     while not _has_token:
         _debug('(%r) waiting for token...\n' % reason)
         # Wait for internal or external work to become available
-        wait_internal_or_external()
+        _wait_internal_or_external()
         if not _has_token:
             # External work
             b = _try_read(_pipe[0], 1)
@@ -136,9 +136,9 @@ def wait_all():
     while running():
         if _has_token:
             put_token()
-        _debug("wait_all: wait()\n")
+        _debug("wait_all: _wait_internal_only()\n")
         # Wait for internal work
-        wait_internal_only()
+        _wait_internal_only()
     _debug("wait_all: empty list\n")
     get_token('self')  # get our token back
     if _toplevel:
@@ -200,7 +200,7 @@ def start_job(name, jobfunc, donefunc):
     # The main process
     close_on_exec(r, True)
     os.close(w)
-    # Put the completion of the job on _completions
+    # Put the job completion on _completions
     completion = Completion(name, pid, donefunc)
     _completions[r] = completion
 
@@ -209,7 +209,7 @@ def start_job(name, jobfunc, donefunc):
 # Private functions
 # ----------------------------------------------------------------------
 
-def wait_internal_or_external():
+def _wait_internal_or_external():
     """
     Wait for internal or external work to become available.
     Internal work is the completion of a build started by this process.
@@ -218,16 +218,16 @@ def wait_internal_or_external():
     rfds = _completions.keys()
     if _pipe:
         rfds.append(_pipe[0])
-    wait(rfds)
+    _wait(rfds)
 
-def wait_internal_only():
+def _wait_internal_only():
     """
     Wait for internal work only.
     """
     rfds = _completions.keys()
-    wait(rfds)
+    _wait(rfds)
 
-def wait(rfds):
+def _wait(rfds):
     """
     Wait for work to become available.
     @rfds Read file descriptors on which to wait
@@ -306,24 +306,24 @@ def _try_read(fd, n):
     """
     Read n bytes from fd
     """
-    # using djb's suggested way of doing non-blocking reads from a blocking
+    # Using djb's suggested way of doing non-blocking reads from a blocking
     # socket: http://cr.yp.to/unix/nonblock.html
     # We can't just make the socket non-blocking, because we want to be
     # compatible with GNU Make, and they can't handle it.
     r,w,x = select.select([fd], [], [], 0)
     if not r:
         return ''  # try again
-    # ok, the socket is readable - but some other process might get there
+    # Ok, the socket is readable - but some other process might get there
     # first.  We have to set an alarm() in case our read() gets stuck.
     oldh = signal.signal(signal.SIGALRM, _timeout)
     try:
-        signal.alarm(1)  # emergency fallback
+        signal.alarm(1)  # Emergency fallback
         try:
             b = os.read(_pipe[0], 1)
         except OSError, e:
             if e.errno in (errno.EAGAIN, errno.EINTR):
-                # interrupted or it was nonblocking
-                return ''  # try again
+                # Interrupted or it was nonblocking
+                return ''  # Try again
             else:
                 raise
     finally:
