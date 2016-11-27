@@ -16,25 +16,29 @@ _toplevel = 0
 _has_token = True
 # A pair of (read, write) file descriptors for passing tokens between processes
 _external_pipe = None
-# The queue of jobs created by this process and waiting to run
-_internal_fds = {}
+# A map from file descriptors to pending job completions
+_internal_completions = {}
 
 # ----------------------------------------------------------------------
 # Private classes
 # ----------------------------------------------------------------------
 
-class Job:
+class Completion:
     """
-    A waiting job
+    A job completion
     """
     def __init__(self, name, pid, donefunc):
+        # The name of the job
         self.name = name
+        # The id of the child process running the job
         self.pid = pid
+        # The return value of the child process
         self.rv = None
+        # The function to run when the job is done
         self.donefunc = donefunc
         
     def __repr__(self):
-        return 'Job(%s,%d)' % (self.name, self.pid)
+        return 'Completion(%s,%d)' % (self.name, self.pid)
 
 # ----------------------------------------------------------------------
 # Public functions
@@ -102,29 +106,12 @@ def get_token(reason):
     global _has_token
     # Ensure the job state is initialized
     setup(1)
-#    if not _has_token:
-#        _debug('(%r) waiting for tokens...\n' % reason)
-#        # Wait for internal or external work to become available
-#        wait(external=True)
-#        if not _has_token:
-#            # External work
-#            b = _try_read(_external_pipe[0], 1)
-#            if b == None:
-#                raise Exception('unexpected EOF on token read')
-#            _has_token = True
-#            _debug('(%r) got a token (%r).\n' % (reason, b))
-    while 1:
-        if _has_token:
-            # We already have a token
-            _debug('(%r) used my own token...\n' % reason)
-            break
-        _debug('(%r) waiting for tokens...\n' % reason)
+    # Loop until we get a token
+    while not _has_token:
+        _debug('(%r) waiting for token...\n' % reason)
         # Wait for internal or external work to become available
         wait(external=True)
-        if _has_token:
-            # Internal work
-            break
-        else:
+        if not _has_token:
             # External work
             b = _try_read(_external_pipe[0], 1)
             if b == None:
@@ -132,17 +119,19 @@ def get_token(reason):
             if b:
                 _has_token = True
                 _debug('(%r) got a token (%r).\n' % (reason, b))
-                break
 
 
 def running():
     """
-    @return Whether this process has pending work
+    @return Whether this process has pending jobs
     """
-    return len(_internal_fds)
+    return len(_internal_completions)
 
 
 def wait_all():
+    """
+    Wait for all available work
+    """
     _debug("wait_all\n")
     while running():
         if _has_token:
@@ -151,7 +140,7 @@ def wait_all():
         # Wait for internal work
         wait(external=False)
     _debug("wait_all: empty list\n")
-    get_token('self')  # get my token back
+    get_token('self')  # get our token back
     if _toplevel:
         bb = ''
         while 1:
@@ -166,29 +155,40 @@ def wait_all():
 
 
 def force_return_tokens():
-    n = len(_internal_fds)
+    """
+    Force return of tokens for aborted jobs
+    """
+    n = len(_internal_completions)
     if n:
         _debug('%d tokens left in force_return_tokens\n' % n)
     _debug('returning %d tokens\n' % n)
-    for k in _internal_fds.keys():
-        del _internal_fds[k]
+    for k in _internal_completions.keys():
+        del _internal_completions[k]
     if _external_pipe:
         _put_tokens(n)
 
 
 def start_job(reason, jobfunc, donefunc):
+    """
+    Start a job
+    @param reason The reason for the job
+    @param jobfunc The function representing the job
+    @param donefunc The function to call when the job is done
+    """
     global _has_token
     get_token(reason)
     assert(_has_token)
     _has_token = False
     r,w = _make_pipe(50)
+    # Fork a child process to run the job
     pid = os.fork()
     if pid == 0:
-        # child
+        # The child process
         os.close(r)
         rv = 201
         try:
             try:
+                # Run the job
                 rv = jobfunc() or 0
                 _debug('jobfunc completed (%r, %r)\n' % (jobfunc,rv))
             except Exception:
@@ -197,10 +197,12 @@ def start_job(reason, jobfunc, donefunc):
         finally:
             _debug('exit: %d\n' % rv)
             os._exit(rv)
+    # The main process
     close_on_exec(r, True)
     os.close(w)
-    pd = Job(reason, pid, donefunc)
-    _internal_fds[r] = pd
+    # Put the completion of the job on _internal_completions
+    completion = Completion(reason, pid, donefunc)
+    _internal_completions[r] = completion
 
 
 # ----------------------------------------------------------------------
@@ -211,39 +213,40 @@ def wait(external):
     """
     Wait for work to become available.
     There are two kinds of work: internal and external.
-    Internal work is a job that completes a build that this process started.
+    Internal work is the completion of a build started by this process.
     External work is a token released by another process on _external_pipe[0].
     @param external Whether we are waiting for external work
     """
-    rfds = _internal_fds.keys()
+    rfds = _internal_completions.keys()
     if _external_pipe and external:
         rfds.append(_external_pipe[0])
     assert(rfds)
     r,w,x = select.select(rfds, [], [])
-    _debug('_external_pipe=%r; wfds=%r; readable: %r\n' % (_external_pipe, _internal_fds, r))
+    _debug('_external_pipe=%r; wfds=%r; readable: %r\n' % (_external_pipe, _internal_completions, r))
     for fd in r:
         if _external_pipe and fd == _external_pipe[0]:
             # External work: handle it in the continuation
             pass
         else:
             # Internal work: handle it here
-            pd = _internal_fds[fd]
-            _debug("done: %r\n" % pd.name)
+            completion = _internal_completions[fd]
+            _debug("done: %r\n" % completion.name)
             # Get a token
             _put_tokens(1)
             os.close(fd)
-            del _internal_fds[fd]
-            rv = os.waitpid(pd.pid, 0)
-            assert(rv[0] == pd.pid)
+            del _internal_completions[fd]
+            # Wait for the child job process to complete
+            rv = os.waitpid(completion.pid, 0)
+            assert(rv[0] == completion.pid)
             _debug("done1: rv=%r\n" % (rv,))
             rv = rv[1]
             if os.WIFEXITED(rv):
-                pd.rv = os.WEXITSTATUS(rv)
+                completion.rv = os.WEXITSTATUS(rv)
             else:
-                pd.rv = -os.WTERMSIG(rv)
-            _debug("done2: rv=%d\n" % pd.rv)
+                completion.rv = -os.WTERMSIG(rv)
+            _debug("done2: rv=%d\n" % completion.rv)
             # Finish the job
-            pd.donefunc(pd.name, pd.rv)
+            completion.donefunc(completion.name, completion.rv)
 
 
 def _debug(s):
@@ -259,12 +262,12 @@ def _put_tokens(n):
     global _has_token
     _debug('_put_tokens(%d)\n' % n)
     if _has_token:
-        num_to_put=n
+        num_to_put = n
     elif n > 0:
         _has_token = True
-        num_to_put=n-1
+        num_to_put = n-1
     else:
-        num_to_put=0
+        num_to_put = 0
     if num_to_put > 0:
         os.write(_external_pipe[1], 't' * num_to_put)
 
