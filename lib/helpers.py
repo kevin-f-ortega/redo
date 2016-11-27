@@ -1,6 +1,6 @@
 # ======================================================================
 # helpers.py
-# Helpers for redo implementation
+# Helper functions for redo implementation
 # ======================================================================
 
 import os, errno, fcntl
@@ -23,7 +23,8 @@ def join(between, l):
 
 
 def unlink(f):
-    """Delete a file at path 'f' if it currently exists.
+    """
+    Delete a file at path 'f' if it currently exists.
 
     Unlike os.unlink(), does not throw an exception if the file didn't already
     exist.

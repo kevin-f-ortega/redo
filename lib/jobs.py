@@ -213,7 +213,7 @@ def wait_internal_or_external():
     """
     Wait for internal or external work to become available.
     Internal work is the completion of a build started by this process.
-    External work is a token released by a process on _pipe[0].
+    External work is a token placed on _pipe[0] by this or another process.
     """
     rfds = _completions.keys()
     if _pipe:
