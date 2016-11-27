@@ -91,7 +91,7 @@ def main(targets, shouldbuildfunc):
                 # give up our personal token while we wait for the lock to
                 # be released; but we should never run get_token() while
                 # holding a lock, or we could cause deadlocks.
-                jobs.release_mine()
+                jobs.put_token()
                 lock.waitlock()
                 lock.unlock()
                 jobs.get_token(t)

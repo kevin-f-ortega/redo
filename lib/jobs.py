@@ -6,74 +6,44 @@
 import sys, os, errno, select, fcntl, signal
 from helpers import atoi, close_on_exec
 
+# ----------------------------------------------------------------------
+# Private variables
+# ----------------------------------------------------------------------
+
+# The maximum number of running jobs across all processes
 _toplevel = 0
+# The number of tokens held by the current process
 _mytokens = 1
+# A pair of (read, write) file descriptors for passing tokens between processes
 _fds = None
+# The queue of jobs created by this process and waiting to run
 _waitfds = {}
 
+# ----------------------------------------------------------------------
+# Private classes
+# ----------------------------------------------------------------------
 
-def _debug(s):
-    if 0:
-        sys.stderr.write('jobs#%d: %s' % (os.getpid(),s))
-    
+class Job:
+    """
+    A waiting job
+    """
+    def __init__(self, name, pid, donefunc):
+        self.name = name
+        self.pid = pid
+        self.rv = None
+        self.donefunc = donefunc
+        
+    def __repr__(self):
+        return 'Job(%s,%d)' % (self.name, self.pid)
 
-def _release(n):
-    global _mytokens
-    _debug('release(%d)\n' % n)
-    _mytokens += n
-    if _mytokens > 1:
-        os.write(_fds[1], 't' * (_mytokens-1))
-        _mytokens = 1
-
-
-def release_mine():
-    global _mytokens
-    assert(_mytokens >= 1)
-    os.write(_fds[1], 't')
-    _mytokens -= 1
-
-
-def _timeout(sig, frame):
-    pass
-
-
-def _make_pipe(startfd):
-    (a,b) = os.pipe()
-    fds = (fcntl.fcntl(a, fcntl.F_DUPFD, startfd),
-            fcntl.fcntl(b, fcntl.F_DUPFD, startfd+1))
-    os.close(a)
-    os.close(b)
-    return fds
-
-
-def _try_read(fd, n):
-    # using djb's suggested way of doing non-blocking reads from a blocking
-    # socket: http://cr.yp.to/unix/nonblock.html
-    # We can't just make the socket non-blocking, because we want to be
-    # compatible with GNU Make, and they can't handle it.
-    r,w,x = select.select([fd], [], [], 0)
-    if not r:
-        return ''  # try again
-    # ok, the socket is readable - but some other process might get there
-    # first.  We have to set an alarm() in case our read() gets stuck.
-    oldh = signal.signal(signal.SIGALRM, _timeout)
-    try:
-        signal.alarm(1)  # emergency fallback
-        try:
-            b = os.read(_fds[0], 1)
-        except OSError, e:
-            if e.errno in (errno.EAGAIN, errno.EINTR):
-                # interrupted or it was nonblocking
-                return ''  # try again
-            else:
-                raise
-    finally:
-        signal.alarm(0)
-        signal.signal(signal.SIGALRM, oldh)
-    return b and b or None  # None means EOF
-
+# ----------------------------------------------------------------------
+# Public functions
+# ----------------------------------------------------------------------
 
 def setup(maxjobs):
+    """
+    Initialize the jobs state
+    """
     global _fds, _toplevel
     if _fds:
         return  # already set up
@@ -107,57 +77,50 @@ def setup(maxjobs):
                   '%s --jobserver-fds=%d,%d -j' % (os.getenv('MAKEFLAGS'),
                                                     _fds[0], _fds[1]))
 
-
-def wait(want_token):
-    rfds = _waitfds.keys()
-    if _fds and want_token:
-        rfds.append(_fds[0])
-    assert(rfds)
-    r,w,x = select.select(rfds, [], [])
-    _debug('_fds=%r; wfds=%r; readable: %r\n' % (_fds, _waitfds, r))
-    for fd in r:
-        if _fds and fd == _fds[0]:
-            pass
-        else:
-            pd = _waitfds[fd]
-            _debug("done: %r\n" % pd.name)
-            _release(1)
-            os.close(fd)
-            del _waitfds[fd]
-            rv = os.waitpid(pd.pid, 0)
-            assert(rv[0] == pd.pid)
-            _debug("done1: rv=%r\n" % (rv,))
-            rv = rv[1]
-            if os.WIFEXITED(rv):
-                pd.rv = os.WEXITSTATUS(rv)
-            else:
-                pd.rv = -os.WTERMSIG(rv)
-            _debug("done2: rv=%d\n" % pd.rv)
-            pd.donefunc(pd.name, pd.rv)
+def put_token():
+    """
+    Put one token held by this process on the pipe
+    """
+    global _mytokens
+    assert(_mytokens >= 1)
+    os.write(_fds[1], 't')
+    _mytokens -= 1
 
 
 def has_token():
+    """
+    @return Whether this process has a token
+    """
     if _mytokens >= 1:
         return True
 
 
 def get_token(reason):
+    """
+    Get a token
+    @param reason The reason for the token
+    """
     global _mytokens
     assert(_mytokens <= 1)
+    # Ensure the job state is initialized
     setup(1)
     while 1:
         if _mytokens >= 1:
+            # We already have a token
             _debug("_mytokens is %d\n" % _mytokens)
             assert(_mytokens == 1)
             _debug('(%r) used my own token...\n' % reason)
             break
         assert(_mytokens < 1)
         _debug('(%r) waiting for tokens...\n' % reason)
-        wait(want_token=1)
+        # Wait for internal or external work to become available
+        wait(external=1)
         if _mytokens >= 1:
+            # Internal work
             break
         assert(_mytokens < 1)
         if _fds:
+            # External work
             b = _try_read(_fds[0], 1)
             if b == None:
                 raise Exception('unexpected EOF on token read')
@@ -169,6 +132,9 @@ def get_token(reason):
 
 
 def running():
+    """
+    @return Whether this process has pending work
+    """
     return len(_waitfds)
 
 
@@ -176,9 +142,10 @@ def wait_all():
     _debug("wait_all\n")
     while running():
         while _mytokens >= 1:
-            release_mine()
+            put_token()
         _debug("wait_all: wait()\n")
-        wait(want_token=0)
+        # Wait for internal work
+        wait(external=0)
     _debug("wait_all: empty list\n")
     get_token('self')  # get my token back
     if _toplevel:
@@ -204,23 +171,6 @@ def force_return_tokens():
         _release(n)
 
 
-def _pre_job(r, w, pfn):
-    os.close(r)
-    if pfn:
-        pfn()
-
-
-class Job:
-    def __init__(self, name, pid, donefunc):
-        self.name = name
-        self.pid = pid
-        self.rv = None
-        self.donefunc = donefunc
-        
-    def __repr__(self):
-        return 'Job(%s,%d)' % (self.name, self.pid)
-
-            
 def start_job(reason, jobfunc, donefunc):
     global _mytokens
     assert(_mytokens <= 1)
@@ -248,3 +198,111 @@ def start_job(reason, jobfunc, donefunc):
     os.close(w)
     pd = Job(reason, pid, donefunc)
     _waitfds[r] = pd
+
+
+# ----------------------------------------------------------------------
+# Private functions
+# ----------------------------------------------------------------------
+
+def wait(external):
+    """
+    Wait for work to become available.
+    There are two kinds of work: internal and external.
+    Internal work is a job that completes a build that this process started.
+    External work is a token released by another process on _fds[0].
+    @param external Whether we want external work
+    """
+    rfds = _waitfds.keys()
+    if _fds and external:
+        rfds.append(_fds[0])
+    assert(rfds)
+    r,w,x = select.select(rfds, [], [])
+    _debug('_fds=%r; wfds=%r; readable: %r\n' % (_fds, _waitfds, r))
+    for fd in r:
+        if _fds and fd == _fds[0]:
+            # External work: handle it in the continuation
+            pass
+        else:
+            # Internal work: handle it here
+            pd = _waitfds[fd]
+            _debug("done: %r\n" % pd.name)
+            # Get a token
+            _release(1)
+            os.close(fd)
+            del _waitfds[fd]
+            rv = os.waitpid(pd.pid, 0)
+            assert(rv[0] == pd.pid)
+            _debug("done1: rv=%r\n" % (rv,))
+            rv = rv[1]
+            if os.WIFEXITED(rv):
+                pd.rv = os.WEXITSTATUS(rv)
+            else:
+                pd.rv = -os.WTERMSIG(rv)
+            _debug("done2: rv=%d\n" % pd.rv)
+            # Finish the job
+            pd.donefunc(pd.name, pd.rv)
+
+
+def _debug(s):
+    if 0:
+        sys.stderr.write('jobs#%d: %s' % (os.getpid(),s))
+    
+
+def _release(n):
+    global _mytokens
+    _debug('release(%d)\n' % n)
+    _mytokens += n
+    if _mytokens > 1:
+        os.write(_fds[1], 't' * (_mytokens-1))
+        _mytokens = 1
+
+
+def _timeout(sig, frame):
+    pass
+
+
+def _make_pipe(startfd):
+    (a,b) = os.pipe()
+    fds = (fcntl.fcntl(a, fcntl.F_DUPFD, startfd),
+            fcntl.fcntl(b, fcntl.F_DUPFD, startfd+1))
+    os.close(a)
+    os.close(b)
+    return fds
+
+
+def _try_read(fd, n):
+    """
+    Read n bytes from fd
+    """
+    # using djb's suggested way of doing non-blocking reads from a blocking
+    # socket: http://cr.yp.to/unix/nonblock.html
+    # We can't just make the socket non-blocking, because we want to be
+    # compatible with GNU Make, and they can't handle it.
+    r,w,x = select.select([fd], [], [], 0)
+    if not r:
+        return ''  # try again
+    # ok, the socket is readable - but some other process might get there
+    # first.  We have to set an alarm() in case our read() gets stuck.
+    oldh = signal.signal(signal.SIGALRM, _timeout)
+    try:
+        signal.alarm(1)  # emergency fallback
+        try:
+            b = os.read(_fds[0], 1)
+        except OSError, e:
+            if e.errno in (errno.EAGAIN, errno.EINTR):
+                # interrupted or it was nonblocking
+                return ''  # try again
+            else:
+                raise
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, oldh)
+    return b and b or None  # None means EOF
+
+
+def _pre_job(r, w, pfn):
+    os.close(r)
+    if pfn:
+        pfn()
+
+
