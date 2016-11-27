@@ -1,6 +1,6 @@
 # ====================================================================== 
 # jobs.py
-# Manage concurrent redo jobs
+# Manage redo jobs
 # ====================================================================== 
 
 import sys, os, errno, select, fcntl, signal
