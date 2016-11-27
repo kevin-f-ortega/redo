@@ -17,7 +17,7 @@ _has_token = True
 # A pair of (read, write) file descriptors for passing tokens between processes
 _pipe = None
 # A map from file descriptors to pending job completions
-_completions = {}
+_completion_map = {}
 
 # ----------------------------------------------------------------------
 # Private classes
@@ -125,7 +125,7 @@ def running():
     """
     @return Whether this process has pending jobs
     """
-    return len(_completions)
+    return len(_completion_map)
 
 
 def wait_all():
@@ -158,12 +158,12 @@ def force_return_tokens():
     """
     Force return of tokens for aborted jobs
     """
-    n = len(_completions)
+    n = len(_completion_map)
     if n:
         _debug('%d tokens left in force_return_tokens\n' % n)
     _debug('returning %d tokens\n' % n)
-    for k in _completions.keys():
-        del _completions[k]
+    for k in _completion_map.keys():
+        del _completion_map[k]
     if _pipe:
         _put_tokens(n)
 
@@ -199,8 +199,8 @@ def start_job(name, jobfunc, donefunc):
     # The main process
     close_on_exec(r, True)
     os.close(w)
-    # Add the job completion to _completions
-    _completions[r] = Completion(name, pid, donefunc)
+    # Add the job completion to _completion_map
+    _completion_map[r] = Completion(name, pid, donefunc)
 
 # ----------------------------------------------------------------------
 # Private functions
@@ -212,7 +212,7 @@ def _wait_internal_or_external():
     Internal work is the completion of a build started by this process.
     External work is a token placed on _pipe[0] by this or another process.
     """
-    rfds = _completions.keys()
+    rfds = _completion_map.keys()
     if _pipe:
         rfds.append(_pipe[0])
     _wait(rfds)
@@ -221,7 +221,7 @@ def _wait_internal_only():
     """
     Wait for internal work only.
     """
-    rfds = _completions.keys()
+    rfds = _completion_map.keys()
     _wait(rfds)
 
 def _wait(rfds):
@@ -231,19 +231,19 @@ def _wait(rfds):
     """
     assert(rfds)
     r,w,x = select.select(rfds, [], [])
-    _debug('_pipe=%r; _completions=%r; readable: %r\n' % (_pipe, _completions, r))
+    _debug('_pipe=%r; _completion_map=%r; readable: %r\n' % (_pipe, _completion_map, r))
     for fd in r:
         if _pipe and fd == _pipe[0]:
             # External work: handle it in the continuation
             pass
         else:
             # Internal work: handle it here
-            completion = _completions[fd]
+            completion = _completion_map[fd]
             _debug("done: %r\n" % completion.name)
             # Get a token
             _put_tokens(1)
             os.close(fd)
-            del _completions[fd]
+            del _completion_map[fd]
             # Wait for the job process to finish
             rv = os.waitpid(completion.pid, 0)
             assert(rv[0] == completion.pid)
