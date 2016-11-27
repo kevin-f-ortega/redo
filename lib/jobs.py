@@ -187,23 +187,20 @@ def start_job(name, jobfunc, donefunc):
         os.close(r)
         rv = 201
         try:
-            try:
-                # Run the job
-                rv = jobfunc() or 0
-                _debug('jobfunc completed (%r, %r)\n' % (jobfunc,rv))
-            except Exception:
-                import traceback
-                traceback.print_exc()
+            # Run the job
+            rv = jobfunc() or 0
+            _debug('jobfunc completed (%r, %r)\n' % (jobfunc,rv))
+        except Exception:
+            import traceback
+            traceback.print_exc()
         finally:
             _debug('exit: %d\n' % rv)
             os._exit(rv)
     # The main process
     close_on_exec(r, True)
     os.close(w)
-    # Put the job completion on _completions
-    completion = Completion(name, pid, donefunc)
-    _completions[r] = completion
-
+    # Add the job completion to _completions
+    _completions[r] = Completion(name, pid, donefunc)
 
 # ----------------------------------------------------------------------
 # Private functions
