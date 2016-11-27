@@ -16,7 +16,7 @@ For more information about apenwarr `redo`, see
 apenwarr `redo`.
 
 2. As development on apenwarr `redo` seems to have stopped, to continue
-   development, including enhancements and bug fixes.
+   development, including code refactoring, enhancements, and bug fixes.
 
 **Contributions:** To date, this repository provides the following improvements to 
 apenwarr `redo`:
