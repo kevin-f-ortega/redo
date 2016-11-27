@@ -15,7 +15,7 @@ _toplevel = 0
 # The number of tokens held by the current process
 _mytokens = 1
 # A pair of (read, write) file descriptors for passing tokens between processes
-_fds = None
+_pipe = None
 # The queue of jobs created by this process and waiting to run
 _waitfds = {}
 
@@ -44,8 +44,8 @@ def setup(maxjobs):
     """
     Initialize the jobs state
     """
-    global _fds, _toplevel
-    if _fds:
+    global _pipe, _toplevel
+    if _pipe:
         return  # already set up
     _debug('setup(%d)\n' % maxjobs)
     flags = ' ' + os.getenv('MAKEFLAGS', '') + ' '
@@ -67,15 +67,15 @@ def setup(maxjobs):
                 raise ValueError('broken --jobserver-fds from make; prefix your Makefile rule with a "+"')
             else:
                 raise
-        _fds = (a,b)
-    if maxjobs and not _fds:
+        _pipe = (a,b)
+    if maxjobs and not _pipe:
         # need to start a new server
         _toplevel = maxjobs
-        _fds = _make_pipe(100)
+        _pipe = _make_pipe(100)
         _release(maxjobs-1)
         os.putenv('MAKEFLAGS',
                   '%s --jobserver-fds=%d,%d -j' % (os.getenv('MAKEFLAGS'),
-                                                    _fds[0], _fds[1]))
+                                                    _pipe[0], _pipe[1]))
 
 def put_token():
     """
@@ -83,7 +83,7 @@ def put_token():
     """
     global _mytokens
     assert(_mytokens >= 1)
-    os.write(_fds[1], 't')
+    os.write(_pipe[1], 't')
     _mytokens -= 1
 
 
@@ -101,7 +101,7 @@ def get_token(reason):
     @param reason The reason for the token
     """
     global _mytokens
-    assert(_mytokens <= 1)
+    assert _mytokens >= 0 and _mytokens <= 1, "_mtokens=%d\n" % _mytokens
     # Ensure the job state is initialized
     setup(1)
     while 1:
@@ -115,20 +115,20 @@ def get_token(reason):
         _debug('(%r) waiting for tokens...\n' % reason)
         # Wait for internal or external work to become available
         wait(external=1)
-        if _mytokens >= 1:
+        assert _mytokens >= 0 and _mytokens <= 1, "_mtokens=%d\n" % _mytokens
+        if _mytokens == 1:
             # Internal work
             break
-        assert(_mytokens < 1)
-        if _fds:
+        else:
             # External work
-            b = _try_read(_fds[0], 1)
+            b = _try_read(_pipe[0], 1)
             if b == None:
                 raise Exception('unexpected EOF on token read')
             if b:
                 _mytokens += 1
                 _debug('(%r) got a token (%r).\n' % (reason, b))
                 break
-    assert(_mytokens <= 1)
+    assert _mytokens >= 0 and _mytokens <= 1, "_mtokens=%d\n" % _mytokens
 
 
 def running():
@@ -151,13 +151,13 @@ def wait_all():
     if _toplevel:
         bb = ''
         while 1:
-            b = _try_read(_fds[0], 8192)
+            b = _try_read(_pipe[0], 8192)
             bb += b
             if not b: break
         if len(bb) != _toplevel-1:
             raise Exception('on exit: expected %d tokens; found only %r' 
                             % (_toplevel-1, len(bb)))
-        os.write(_fds[1], bb)
+        os.write(_pipe[1], bb)
 
 
 def force_return_tokens():
@@ -167,7 +167,7 @@ def force_return_tokens():
     _debug('returning %d tokens\n' % n)
     for k in _waitfds.keys():
         del _waitfds[k]
-    if _fds:
+    if _pipe:
         _release(n)
 
 
@@ -209,17 +209,17 @@ def wait(external):
     Wait for work to become available.
     There are two kinds of work: internal and external.
     Internal work is a job that completes a build that this process started.
-    External work is a token released by another process on _fds[0].
+    External work is a token released by another process on _pipe[0].
     @param external Whether we want external work
     """
     rfds = _waitfds.keys()
-    if _fds and external:
-        rfds.append(_fds[0])
+    if _pipe and external:
+        rfds.append(_pipe[0])
     assert(rfds)
     r,w,x = select.select(rfds, [], [])
-    _debug('_fds=%r; wfds=%r; readable: %r\n' % (_fds, _waitfds, r))
+    _debug('_pipe=%r; wfds=%r; readable: %r\n' % (_pipe, _waitfds, r))
     for fd in r:
-        if _fds and fd == _fds[0]:
+        if _pipe and fd == _pipe[0]:
             # External work: handle it in the continuation
             pass
         else:
@@ -253,7 +253,7 @@ def _release(n):
     _debug('release(%d)\n' % n)
     _mytokens += n
     if _mytokens > 1:
-        os.write(_fds[1], 't' * (_mytokens-1))
+        os.write(_pipe[1], 't' * (_mytokens-1))
         _mytokens = 1
 
 
@@ -287,7 +287,7 @@ def _try_read(fd, n):
     try:
         signal.alarm(1)  # emergency fallback
         try:
-            b = os.read(_fds[0], 1)
+            b = os.read(_pipe[0], 1)
         except OSError, e:
             if e.errno in (errno.EAGAIN, errno.EINTR):
                 # interrupted or it was nonblocking
