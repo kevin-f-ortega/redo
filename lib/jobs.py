@@ -110,7 +110,7 @@ def get_token(reason):
     while not _has_token:
         _debug('(%r) waiting for token...\n' % reason)
         # Wait for internal or external work to become available
-        wait(external=True)
+        wait_internal_or_external()
         if not _has_token:
             # External work
             b = _try_read(_pipe[0], 1)
@@ -138,7 +138,7 @@ def wait_all():
             put_token()
         _debug("wait_all: wait()\n")
         # Wait for internal work
-        wait(external=False)
+        wait_internal_only()
     _debug("wait_all: empty list\n")
     get_token('self')  # get our token back
     if _toplevel:
@@ -209,17 +209,29 @@ def start_job(name, jobfunc, donefunc):
 # Private functions
 # ----------------------------------------------------------------------
 
-def wait(external):
+def wait_internal_or_external():
     """
-    Wait for work to become available.
-    There are two kinds of work: internal and external.
+    Wait for internal or external work to become available.
     Internal work is the completion of a build started by this process.
-    External work is a token released by another process on _pipe[0].
-    @param external Whether we are waiting for external work
+    External work is a token released by a process on _pipe[0].
     """
     rfds = _completions.keys()
-    if _pipe and external:
+    if _pipe:
         rfds.append(_pipe[0])
+    wait(rfds)
+
+def wait_internal_only():
+    """
+    Wait for internal work only.
+    """
+    rfds = _completions.keys()
+    wait(rfds)
+
+def wait(rfds):
+    """
+    Wait for work to become available.
+    @rfds Read file descriptors on which to wait
+    """
     assert(rfds)
     r,w,x = select.select(rfds, [], [])
     _debug('_pipe=%r; wfds=%r; readable: %r\n' % (_pipe, _completions, r))
@@ -235,7 +247,7 @@ def wait(external):
             _put_tokens(1)
             os.close(fd)
             del _completions[fd]
-            # Wait for the child job process to complete
+            # Wait for the child job process to finish
             rv = os.waitpid(completion.pid, 0)
             assert(rv[0] == completion.pid)
             _debug("done1: rv=%r\n" % (rv,))
@@ -245,7 +257,7 @@ def wait(external):
             else:
                 completion.rv = -os.WTERMSIG(rv)
             _debug("done2: rv=%d\n" % completion.rv)
-            # Finish the job
+            # Complete the job
             completion.donefunc(completion.name, completion.rv)
 
 
