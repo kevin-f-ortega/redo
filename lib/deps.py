@@ -7,8 +7,16 @@ import sys, os
 import vars, state, builder
 from log import debug
 
+# ----------------------------------------------------------------------
+# Public onstants
+# ----------------------------------------------------------------------
+
 CLEAN = 0
 DIRTY = 1
+
+# ----------------------------------------------------------------------
+# Public functions
+# ----------------------------------------------------------------------
 
 def isdirty(f, depth, max_changed,
             is_checked=state.File.is_checked,
