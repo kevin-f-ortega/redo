@@ -1,6 +1,8 @@
-#
-# beware the jobberwack
-#
+# ====================================================================== 
+# jobs.py
+# Manage concurrent redo jobs
+# ====================================================================== 
+
 import sys, os, errno, select, fcntl, signal
 from helpers import atoi, close_on_exec
 
@@ -12,7 +14,7 @@ _waitfds = {}
 
 def _debug(s):
     if 0:
-        sys.stderr.write('jwack#%d: %s' % (os.getpid(),s))
+        sys.stderr.write('jobs#%d: %s' % (os.getpid(),s))
     
 
 def _release(n):

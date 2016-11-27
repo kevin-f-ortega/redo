@@ -4,7 +4,7 @@ import sys, os
 import vars_init
 vars_init.init(sys.argv[1:])
 
-import vars, state, builder, jwack, deps
+import vars, state, builder, jobs, deps
 from helpers import unlink
 from log import debug, debug2, err
 
@@ -34,7 +34,7 @@ try:
             f.save()
         rv = builder.main(targets, should_build)
     finally:
-        jwack.force_return_tokens()
+        jobs.force_return_tokens()
 except KeyboardInterrupt:
     sys.exit(200)
 state.commit()

@@ -1,5 +1,5 @@
 import sys, os, errno, stat
-import vars, jwack, state
+import vars, jobs, state
 from helpers import unlink, close_on_exec, join
 from log import log, log_, debug, debug2, err, warn
 
@@ -171,7 +171,7 @@ class BuildJob:
         dof.set_static()
         dof.save()
         state.commit()
-        jwack.start_job(t, self._do_subproc, self._after)
+        jobs.start_job(t, self._do_subproc, self._after)
 
     def _start_unlocked(self, dirty):
         # out-of-band redo of some sub-objects.  This happens when we're not
@@ -195,7 +195,7 @@ class BuildJob:
             # returns only if there's an exception
         def after(t, rv):
             return self._after2(rv)
-        jwack.start_job(self.t, run, after)
+        jobs.start_job(self.t, run, after)
 
     def _do_subproc(self):
         # careful: REDO_PWD was the PWD relative to the STARTPATH at the time
@@ -314,9 +314,9 @@ def main(targets, shouldbuildfunc):
         if t in seen:
             continue
         seen[t] = 1
-        if not jwack.has_token():
+        if not jobs.has_token():
             state.commit()
-        jwack.get_token(t)
+        jobs.get_token(t)
         if retcode[0] and not vars.KEEP_GOING:
             break
         if not state.check_sane():
@@ -345,9 +345,9 @@ def main(targets, shouldbuildfunc):
     # do anything.  The only exception is if we're invoked as redo instead
     # of redo-ifchange; then we have to redo it even if someone else already
     # did.  But that should be rare.
-    while locked or jwack.running():
+    while locked or jobs.running():
         state.commit()
-        jwack.wait_all()
+        jobs.wait_all()
         # at this point, we don't have any children holding any tokens, so
         # it's okay to block below.
         if retcode[0] and not vars.KEEP_GOING:
@@ -367,10 +367,10 @@ def main(targets, shouldbuildfunc):
                 # give up our personal token while we wait for the lock to
                 # be released; but we should never run get_token() while
                 # holding a lock, or we could cause deadlocks.
-                jwack.release_mine()
+                jobs.release_mine()
                 lock.waitlock()
                 lock.unlock()
-                jwack.get_token(t)
+                jobs.get_token(t)
                 lock.trylock()
             assert(lock.owned)
             if vars.DEBUG_LOCKS:
