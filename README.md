@@ -10,14 +10,16 @@ rules as shell scripts (called "`.do` files") with dynamic dependency tracking.
 For more information about apenwarr `redo`, see
 [this README file](https://github.com/apenwarr/redo/blob/master/README.md).
 
-My goals with this fork are the following:
+**Goals:** My goals for this repository are the following:
 
-1. To be backwards compatible with, and provide a drop-in replacement for, apenwarr redo.
+1. To be backwards compatible with, and provide a drop-in replacement for, 
+apenwarr `redo`.
 
 2. As development on apenwarr `redo` seems to have stopped, to continue
    development, including enhancements and bug fixes.
 
-To date, this repository provides the following improvements to apenwarr redo:
+**Contributions:** To date, this repository provides the following improvements to 
+apenwarr `redo`:
 
 * Improved and better documented installation procedure.
 
