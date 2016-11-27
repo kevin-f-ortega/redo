@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+# ======================================================================
+# redo-targets.py
+# Implement the redo-targets command
+# ======================================================================
+
 import sys, os
 
 import vars_init

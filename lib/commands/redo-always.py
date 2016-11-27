@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+# ======================================================================
+# redo-always.py
+# Implement the redo-always command
+# ======================================================================
+
 import sys, os
 import vars, state
 from log import err

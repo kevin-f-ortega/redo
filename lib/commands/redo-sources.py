@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+# ======================================================================
+# redo-sources.py
+# Implement the redo-sources command
+# ======================================================================
+
 import sys, os
 
 import vars_init

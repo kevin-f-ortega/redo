@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+# ======================================================================
+# redo.py
+# Implement the redo command
+# ======================================================================
+
 import sys, os
 import options
 from helpers import atoi

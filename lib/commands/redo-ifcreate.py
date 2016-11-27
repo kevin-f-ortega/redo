@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+# ======================================================================
+# redo-ifcreate.py
+# Implement the redo-ifcreate command
+# ======================================================================
+
 import sys, os
 import vars, state
 from log import err

@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+# ======================================================================
+# redo-ifchange.py
+# Implement the redo-ifchange command
+# ======================================================================
+
 import sys, os
 
 import vars_init

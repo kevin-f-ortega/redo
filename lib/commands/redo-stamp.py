@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+# ======================================================================
+# redo-stamp.py
+# Implement the redo-stamp command
+# ======================================================================
+
 import sys, os
 import vars, state
 from log import err, debug2

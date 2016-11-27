@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+# ======================================================================
+# redo-ood.py
+# Implement the redo-ood command
+# ======================================================================
+
 import sys, os
 
 import vars_init

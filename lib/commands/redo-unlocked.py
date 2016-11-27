@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+# ======================================================================
+# redo-unlocked.py
+# Implement the redo-unlocked command
+# ======================================================================
+
 import sys, os
 import state
 from log import err
