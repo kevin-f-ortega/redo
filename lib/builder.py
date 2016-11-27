@@ -200,7 +200,7 @@ class BuildJob:
         except ImmediateReturn, e:
             return self._after2(e.rv)
 
-        if vars.NO_OOB or dirty == True:
+        if vars.NO_UNLOCKED or dirty == True:
             self._start_do()
         else:
             self._start_unlocked(dirty)
