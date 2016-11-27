@@ -231,7 +231,7 @@ def _wait(rfds):
     """
     assert(rfds)
     r,w,x = select.select(rfds, [], [])
-    _debug('_pipe=%r; wfds=%r; readable: %r\n' % (_pipe, _completions, r))
+    _debug('_pipe=%r; _completions=%r; readable: %r\n' % (_pipe, _completions, r))
     for fd in r:
         if _pipe and fd == _pipe[0]:
             # External work: handle it in the continuation
@@ -244,7 +244,7 @@ def _wait(rfds):
             _put_tokens(1)
             os.close(fd)
             del _completions[fd]
-            # Wait for the child job process to finish
+            # Wait for the job process to finish
             rv = os.waitpid(completion.pid, 0)
             assert(rv[0] == completion.pid)
             _debug("done1: rv=%r\n" % (rv,))
