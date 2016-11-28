@@ -240,6 +240,7 @@ class BuildJob:
         def run():
             os.chdir(vars.BASE)
             os.environ['REDO_DEPTH'] = vars.DEPTH + '  '
+            locks.add(str(self.lock.fid))
             os.execvp(argv[0], argv)
             assert(0)
             # returns only if there's an exception
