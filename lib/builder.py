@@ -96,7 +96,7 @@ def main(targets, shouldbuildfunc):
                 # holding a lock, or we could cause deadlocks.
                 jobs.put_token()
                 if not lock.waitlock():
-                    err('encountered cyclic dependence building %s\n' % _nice(t))
+                    err('encountered a cyclic dependence building %s\n' % _nice(t))
                     jobs.get_token(t)
                     retcode[0] = 208
                     return retcode[0]
