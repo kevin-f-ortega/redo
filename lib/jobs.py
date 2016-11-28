@@ -240,7 +240,8 @@ def _wait(rfds):
             # Internal work: handle it here
             completion = _completion_map[fd]
             _debug("done: %r\n" % completion.name)
-            # Get a token
+            # Get a token if we don't already have one.
+            # Otherwise put it on the pipe.
             _put_tokens(1)
             os.close(fd)
             del _completion_map[fd]
