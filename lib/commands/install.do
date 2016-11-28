@@ -12,11 +12,9 @@ exec >&2
 vars_require_set INSTALL LIBDIR
 
 subdir=`basename $DIR`
-evald $INSTALL -d $LIBDIR/$subdir
+evald $INSTALL -d $LIBDIR
 
-for src in *.py
+for py in *.py
 do
-	dest=`echo $src | sed 's,-,_,g'`
-	evald $INSTALL -m 0644 $src $LIBDIR/$subdir/$dest
+	evald $INSTALL -m 0644 $py $LIBDIR/$py
 done
-touch $LIBDIR/$subdir/__init__.py
