@@ -6,6 +6,10 @@
 import sys, os
 import vars
 
+# ----------------------------------------------------------------------
+# Private constants
+# ----------------------------------------------------------------------
+
 # By default, no output colouring.
 RED    = ""
 GREEN  = ""
@@ -21,6 +25,9 @@ if sys.stderr.isatty() and (os.environ.get('TERM') or 'dumb') != 'dumb':
     BOLD   = "\x1b[1m"
     PLAIN  = "\x1b[m"
 
+# ----------------------------------------------------------------------
+# Private functions
+# ----------------------------------------------------------------------
 
 def log_(s):
     sys.stdout.flush()
@@ -31,6 +38,10 @@ def log_(s):
     sys.stderr.flush()
 
 
+# ----------------------------------------------------------------------
+# Public functions
+# ----------------------------------------------------------------------
+
 def log(s):
     log_(''.join([GREEN,  "redo  ", vars.DEPTH, BOLD, s, PLAIN]))
 
@@ -39,7 +50,6 @@ def err(s):
 
 def warn(s):
     log_(''.join([YELLOW, "redo  ", vars.DEPTH, BOLD, s, PLAIN]))
-
 
 def debug(s):
     if vars.DEBUG >= 1:
