@@ -10,7 +10,9 @@ rules as shell scripts (called "`.do` files") with dynamic dependency tracking.
 For more information about apenwarr `redo`, see
 [this README file](https://github.com/apenwarr/redo/blob/master/README.md).
 
-**Goals:** My goals for this repository are the following:
+## Goals
+
+My goals for this repository are as follows:
 
 1. To be backwards compatible with, and provide a drop-in replacement for, 
 apenwarr `redo`.
@@ -18,8 +20,9 @@ apenwarr `redo`.
 2. As development on apenwarr `redo` seems to have stopped, to continue
    development, including code refactoring, enhancements, and bug fixes.
 
-**Contributions:** To date, this repository provides the following improvements to 
-apenwarr `redo`:
+## Contributions
+
+To date, I have made the following improvements to apenwarr `redo`:
 
 * Improved the installation procedure.
 
@@ -28,9 +31,8 @@ apenwarr `redo`:
 * Added cycle detection, so that redo prints an error message and halts
   instead of hanging when it encounters a cyclic build dependence.
 
-* Fixed a glitch involving bad symlinks on some systems.
-
-* Fixed a bug that caused spurious warnings about updated files on some systems.
+* Fixed bugs that caused spurious warnings about updated files on 
+  some systems.
 
 * Removed the deprecated "old-args" feature.
 
