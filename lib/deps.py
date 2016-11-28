@@ -8,7 +8,7 @@ import vars, state, builder
 from log import debug
 
 # ----------------------------------------------------------------------
-# Public onstants
+# Public constants
 # ----------------------------------------------------------------------
 
 CLEAN = 0
@@ -18,9 +18,23 @@ DIRTY = 1
 # Public functions
 # ----------------------------------------------------------------------
 
-def isdirty(f, depth, max_changed,
-            is_checked=state.File.is_checked,
-            set_checked=state.File.set_checked_save):
+def isdirty(
+    f,
+    depth, 
+    max_changed,
+    is_checked=state.File.is_checked,
+    set_checked=state.File.set_checked_save
+):
+    '''
+    Determine whether a file needs to be built
+    @param f The file name
+    @param depth The recursion depth
+    @param max_changed The maximum changed run ID
+    @param The function for determining whether f is checked
+    @param The function for setting that the file is checked and saving state
+    @return One of the following: CLEAN (the file is clean); or
+            DIRTY (the file is dirty); or a list of targets to build
+    '''
     if vars.DEBUG >= 1:
         debug('%s?%s\n' % (depth, f.nicename()))
 
@@ -52,13 +66,12 @@ def isdirty(f, depth, max_changed,
         else:
             return DIRTY
 
-    must_build = []
+    targets = []
     for mode,f2 in f.deps():
-        dirty = CLEAN
-        if mode == 'c':
-            if os.path.exists(os.path.join(vars.BASE, f2.name)):
-                debug('%s-- DIRTY (created)\n' % depth)
-                dirty = DIRTY
+        status = CLEAN
+        if mode == 'c' and os.path.exists(os.path.join(vars.BASE, f2.name)):
+            debug('%s-- DIRTY (created)\n' % depth)
+            status = DIRTY
         elif mode == 'm':
             sub = isdirty(f2, depth = depth + '  ',
                           max_changed = max(f.changed_runid,
@@ -66,36 +79,33 @@ def isdirty(f, depth, max_changed,
                           is_checked=is_checked, set_checked=set_checked)
             if sub:
                 debug('%s-- DIRTY (sub)\n' % depth)
-                dirty = sub
+                status = sub
         else:
             assert(mode in ('c','m'))
-        if not f.csum:
-            # f is a "normal" target: dirty f2 means f is instantly dirty
-            if dirty:
-                # if dirty==DIRTY, this means f is definitely dirty.
-                # if dirty==[...], it's a list of the uncertain children.
-                return dirty
-        else:
+        if f.csum:
             # f is "checksummable": dirty f2 means f needs to redo,
             # but f might turn out to be clean after that (ie. our parent
             # might not be dirty).
-            if dirty == DIRTY:
+            if status == DIRTY:
                 # f2 is definitely dirty, so f definitely needs to
                 # redo.  However, after that, f might turn out to be
                 # unchanged.
                 return [f]
-            elif isinstance(dirty,list):
+            elif isinstance(status, list):
                 # our child f2 might be dirty, but it's not sure yet.  It's
                 # given us a list of targets we have to redo in order to
                 # be sure.
-                must_build += dirty
+                targets += status
+        elif status == DIRTY:
+            # f is a "normal" target: dirty f2 means f is instantly dirty
+            return status
 
-    if must_build:
+    if targets:
         # f is *maybe* dirty because at least one of its children is maybe
-        # dirty.  must_build has accumulated a list of "topmost" uncertain
+        # dirty.  targets has accumulated a list of "topmost" uncertain
         # objects in the tree.  If we build all those, we can then
         # redo-ifchange f and it won't have any uncertainty next time.
-        return must_build
+        return targets
 
     # if we get here, it's because the target is clean
     if f.is_override:
