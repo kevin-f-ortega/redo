@@ -18,11 +18,14 @@ def should_build(t):
     f = state.File(name=t)
     if f.is_failed():
         raise builder.ImmediateReturn(32)
-    dirty = deps.isdirty(f, depth = '', max_changed = vars.RUNID)
-    if dirty == [f]:
-      return True
+    status = deps.isdirty(f, depth = '', max_changed = vars.RUNID)
+    if status == [f]:
+      return deps.DIRTY
     else:
-      return dirty
+      # FIXME: This is really confusing!
+      # The status can be any one of deps.CLEAN or deps.DIRTY or 
+      # a list of targets to build with redo-unlocked.
+      return status
 
 
 rv = 202

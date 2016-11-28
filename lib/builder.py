@@ -4,7 +4,7 @@
 # ======================================================================
 
 import sys, os, errno, stat
-import vars, jobs, state, locks
+import vars, jobs, state, locks, deps
 from helpers import unlink, close_on_exec, join
 from log import log, log_, debug, debug2, err, warn
 
@@ -141,13 +141,13 @@ class BuildJob:
         assert(self.lock.owned)
         try:
             dirty = self.shouldbuildfunc(self.t)
-            if not dirty:
+            if dirty == deps.CLEAN:
                 # target doesn't need to be built; skip the whole task
                 return self._after2(0)
         except ImmediateReturn, e:
             return self._after2(e.rv)
 
-        if vars.NO_UNLOCKED or dirty == True:
+        if vars.NO_UNLOCKED or dirty == deps.DIRTY:
             self._start_do()
         else:
             self._start_unlocked(dirty)
