@@ -96,7 +96,7 @@ def isdirty(
                 # given us a list of targets we have to redo in order to
                 # be sure.
                 targets += status
-        elif status == DIRTY:
+        elif not status == CLEAN:
             # f is a "normal" target: dirty f2 means f is instantly dirty
             return status
 
