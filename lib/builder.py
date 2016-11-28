@@ -4,7 +4,7 @@
 # ======================================================================
 
 import sys, os, errno, stat
-import vars, jobs, state
+import vars, jobs, state, locks
 from helpers import unlink, close_on_exec, join
 from log import log, log_, debug, debug2, err, warn
 
@@ -258,7 +258,7 @@ class BuildJob:
         os.environ['REDO_PWD'] = state.relpath(newp, vars.STARTDIR)
         os.environ['REDO_TARGET'] = self.basename + self.ext
         os.environ['REDO_DEPTH'] = vars.DEPTH + '  '
-        vars.add_lock(str(self.lock.fid))
+        locks.add(str(self.lock.fid))
         if dn:
             os.chdir(dn)
         os.dup2(self.f.fileno(), 1)

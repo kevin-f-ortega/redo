@@ -4,7 +4,7 @@
 # ====================================================================== 
 
 import sys, os, errno, glob, stat, fcntl, sqlite3
-import vars
+import vars, locks
 from helpers import unlink, close_on_exec, join
 from log import warn, err, debug2, debug3
 
@@ -222,7 +222,7 @@ class Lock:
 
     def waitlock(self):
         assert(not self.owned)
-        if str(self.fid) in vars.locks():
+        if str(self.fid) in locks.get():
             # Lock already held by parent: cyclic dependence
             return False
         fcntl.lockf(self.lockfile, fcntl.LOCK_EX, 0, 0)
