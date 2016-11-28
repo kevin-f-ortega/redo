@@ -19,7 +19,10 @@ def should_build(t):
     if f.is_failed():
         raise builder.ImmediateReturn(32)
     dirty = deps.isdirty(f, depth = '', max_changed = vars.RUNID)
-    return dirty==[f] and deps.DIRTY or dirty
+    if dirty == [f]:
+      return True
+    else:
+      return dirty
 
 
 rv = 202
