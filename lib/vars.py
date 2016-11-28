@@ -12,6 +12,10 @@ if not os.environ.get('REDO'):
                      % sys.argv[0])
     sys.exit(100)
 
+# ----------------------------------------------------------------------
+# Public variables
+# ----------------------------------------------------------------------
+
 PWD = os.environ.get('REDO_PWD', '')
 TARGET = os.environ.get('REDO_TARGET', '')
 DEPTH = os.environ.get('REDO_DEPTH', '')
@@ -33,3 +37,25 @@ os.environ['REDO_UNLOCKED'] = ''  # not inheritable by subprocesses
 
 NO_UNLOCKED = os.environ.get('REDO_NO_UNLOCKED', '') and 1 or 0
 os.environ['REDO_NO_UNLOCKED'] = ''    # not inheritable by subprocesses
+
+# ----------------------------------------------------------------------
+# Public functions
+# ----------------------------------------------------------------------
+
+def get_locks():
+  '''
+  Get the list of held locks
+  '''
+  return os.environ['REDO_LOCKS'].split(':')
+
+def add_lock(name):
+  '''
+  Add a lock to the list of held locks
+  '''
+  if name in locks():
+      return
+  lock_string = os.environ['REDO_LOCKS']
+  if len(lock_string) > 0:
+      os.environ['REDO_LOCKS'] = lock_string + ':' + name
+  else:
+      os.environ['REDO_LOCKS'] = name

@@ -207,7 +207,7 @@ class Lock:
         if self.owned:
             self.unlock()
         os.close(self.lockfile)
-
+    
     def trylock(self):
         assert(not self.owned)
         try:
@@ -222,8 +222,12 @@ class Lock:
 
     def waitlock(self):
         assert(not self.owned)
+        if str(self.fid) in vars.locks():
+            # Lock already held by parent: cyclic dependence
+            return False
         fcntl.lockf(self.lockfile, fcntl.LOCK_EX, 0, 0)
         self.owned = True
+        return True
             
     def unlock(self):
         if not self.owned:

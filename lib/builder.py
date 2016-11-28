@@ -95,7 +95,11 @@ def main(targets, shouldbuildfunc):
                 # be released; but we should never run get_token() while
                 # holding a lock, or we could cause deadlocks.
                 jobs.put_token()
-                lock.waitlock()
+                if not lock.waitlock():
+                    err('encountered cyclic dependence building %s\n' % _nice(t))
+                    jobs.get_token(t)
+                    retcode[0] = 208
+                    return retcode[0]
                 lock.unlock()
                 jobs.get_token(t)
                 lock.trylock()
@@ -254,6 +258,7 @@ class BuildJob:
         os.environ['REDO_PWD'] = state.relpath(newp, vars.STARTDIR)
         os.environ['REDO_TARGET'] = self.basename + self.ext
         os.environ['REDO_DEPTH'] = vars.DEPTH + '  '
+        vars.add_lock(str(self.lock.fid))
         if dn:
             os.chdir(dn)
         os.dup2(self.f.fileno(), 1)
