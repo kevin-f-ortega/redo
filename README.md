@@ -23,17 +23,16 @@ apenwarr `redo`:
 
 * Improved the installation procedure.
 
+* Refactored and reorganized the code.
+
+* Added cycle detection, so that redo prints an error message and halts
+  instead of hanging when it encounters a cyclic build dependence.
+
 * Fixed a glitch involving bad symlinks on some systems.
 
 * Fixed a bug that caused spurious warnings about updated files on some systems.
 
 * Removed the deprecated "old-args" feature.
-
-* Refactored and reorganized the code.
-
-The refactoring is ongoing. 
-Once it is done, I plan to dig further into the code and add features to it
-(e.g., improved error reporting).
 
 ## Contents
 
