@@ -8,3 +8,4 @@
 
 subdir_targets redo clean
 rm_tmp
+find . -name .redo | xargs rm -r
