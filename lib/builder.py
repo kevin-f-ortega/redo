@@ -4,7 +4,7 @@
 # ======================================================================
 
 import sys, os, errno, stat
-import vars, jobs, state, locks, deps
+import vars, jobs, state, targets_seen, deps
 from helpers import unlink, close_on_exec, join
 from log import log, log_, debug, debug2, err, warn
 
@@ -85,6 +85,13 @@ def main(targets, shouldbuildfunc):
                 retcode[0] = 205
                 break
             fid,t = locked.pop(0)
+            target_list = targets_seen.get()
+            if t in target_list:
+                # Target locked by parent: cyclic dependence
+                err('encountered a dependence cycle:\n')
+                _print_cycle(target_list, t)
+                retcode[0] = 208
+                break
             lock = state.Lock(fid)
             lock.trylock()
             while not lock.owned:
@@ -95,11 +102,7 @@ def main(targets, shouldbuildfunc):
                 # be released; but we should never run get_token() while
                 # holding a lock, or we could cause deadlocks.
                 jobs.put_token()
-                if not lock.waitlock():
-                    err('encountered a cyclic dependence building %s\n' % _nice(t))
-                    jobs.get_token(t)
-                    retcode[0] = 208
-                    return retcode[0]
+                lock.waitlock()
                 lock.unlock()
                 jobs.get_token(t)
                 lock.trylock()
@@ -240,7 +243,7 @@ class BuildJob:
         def run():
             os.chdir(vars.BASE)
             os.environ['REDO_DEPTH'] = vars.DEPTH + '  '
-            locks.add(str(self.lock.fid))
+            targets_seen.add(self.t)
             os.execvp(argv[0], argv)
             assert(0)
             # returns only if there's an exception
@@ -259,7 +262,7 @@ class BuildJob:
         os.environ['REDO_PWD'] = state.relpath(newp, vars.STARTDIR)
         os.environ['REDO_TARGET'] = self.basename + self.ext
         os.environ['REDO_DEPTH'] = vars.DEPTH + '  '
-        locks.add(str(self.lock.fid))
+        targets_seen.add(self.t)
         if dn:
             os.chdir(dn)
         os.dup2(self.f.fileno(), 1)
@@ -395,6 +398,16 @@ def _find_do_file(f):
 
 def _nice(t):
     return state.relpath(t, vars.STARTDIR)
+
+
+def _print_cycle(target_list, t):
+    n = len(target_list)
+    for i in xrange(0, n):
+        if target_list[i] == t:
+            break
+    for j in xrange(i, n):
+        err('  %s\n' % target_list[j])
+    err('  %s\n' % t)
 
 
 def _try_stat(filename):

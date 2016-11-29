@@ -40,4 +40,4 @@ def init(targets):
         import state
         state.init()
 
-    os.environ['REDO_LOCKS'] = os.environ.get('REDO_LOCKS', '')
+    os.environ['REDO_TARGETS_SEEN'] = os.environ.get('REDO_TARGETS_SEEN', '')
