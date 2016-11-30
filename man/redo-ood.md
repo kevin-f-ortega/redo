@@ -22,7 +22,7 @@ list.  (For example, if you built a file and then removed
 the file and its .do file, you wouldn't want it to show up
 in this list.)
 
-If a .do script does not produce an output file (eg.
+If a .do script does not produce an output file (e.g.
 all.do, clean.do), it also does not show up in this list.
 
 Each filename is on a separate line.  The filenames are not
@@ -44,14 +44,9 @@ ones, use `redo-targets`(1).
 # REDO
 
 Part of the `redo`(1) suite.
-    
-# CREDITS
 
-The original concept for `redo` was created by D. J.
-Bernstein and documented on his web site
-(http://cr.yp.to/redo.html).  This independent implementation
-was created by Avery Pennarun and you can find its source
-code at http://github.com/apenwarr/redo.
+
+.CREDITS
 
 
 # SEE ALSO

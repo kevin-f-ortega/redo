@@ -21,7 +21,7 @@ than a list of *targets*.  To provide command line options,
 you need to run `redo` instead.
 
 redo-ifchange performs the following steps:
-
+  
 - it creates a dependency on the given *targets*.  If any
   of those targets change in the future, the current target
   (the one calling redo-ifchange) will marked as needing to
@@ -81,14 +81,9 @@ of targets, but redo-ifchanging them all at once:
 # REDO
 
 Part of the `redo`(1) suite.
-    
-# CREDITS
 
-The original concept for `redo` was created by D. J.
-Bernstein and documented on his web site
-(http://cr.yp.to/redo.html).  This independent implementation
-was created by Avery Pennarun and you can find its source
-code at http://github.com/apenwarr/redo.
+
+.CREDITS
 
 
 # SEE ALSO

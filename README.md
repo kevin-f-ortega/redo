@@ -26,7 +26,7 @@ To date, I have made the following improvements to apenwarr `redo`:
 
 * Improved the installation procedure.
 
-* Refactored and reorganized the code.
+* Fixed the problem of [multiple inconsistent .redo directories](https://github.com/bocchino/redo/issues/1).
 
 * Added cycle detection, so that redo prints an error message and halts
   instead of hanging when it encounters a cyclic build dependence.
@@ -35,6 +35,8 @@ To date, I have made the following improvements to apenwarr `redo`:
   some systems.
 
 * Removed the deprecated "old-args" feature.
+
+* Refactored the code.
 
 ## Contents
 

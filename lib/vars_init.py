@@ -26,14 +26,12 @@ def init(targets):
         os.environ['REDO'] = os.path.abspath(sys.argv[0])
 
     if not os.environ.get('REDO_BASE'):
-        base = os.path.commonprefix([os.path.abspath(os.path.dirname(t))
-                                     for t in targets] + [os.getcwd()])
-        bsplit = base.split('/')
-        for i in range(len(bsplit)-1, 0, -1):
-            newbase = '/'.join(bsplit[:i])
-            if os.path.exists(newbase + '/.redo'):
-                base = newbase
-                break
+        base = os.path.expanduser('~')
+        atoms = os.getcwd().split('/')
+        for i in range(len(atoms), 0, -1):
+            possible_base = '/'.join(atoms[:i])
+            if os.path.exists(possible_base + '/.redo-base'):
+                base = possible_base
         os.environ['REDO_BASE'] = base
         os.environ['REDO_STARTDIR'] = os.getcwd()
 
