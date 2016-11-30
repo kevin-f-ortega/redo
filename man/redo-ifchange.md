@@ -21,7 +21,7 @@ than a list of *targets*.  To provide command line options,
 you need to run `redo` instead.
 
 redo-ifchange performs the following steps:
-
+  
 - it creates a dependency on the given *targets*.  If any
   of those targets change in the future, the current target
   (the one calling redo-ifchange) will marked as needing to
