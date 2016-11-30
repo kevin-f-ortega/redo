@@ -8,3 +8,4 @@
 
 subdir_targets redo clean
 rm_tmp
+rm -rf .redo
