@@ -22,7 +22,7 @@ list.  (For example, if you built a file and then removed
 the file and its .do file, you wouldn't want it to show up
 in this list.)
 
-If a .do script does not produce an output file (eg.
+If a .do script does not produce an output file (e.g.
 all.do, clean.do), it also does not show up in this list.
 
 The output of redo-targets might be useful in a

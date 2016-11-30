@@ -21,8 +21,8 @@ called '.do scripts.'
 redo supports GNU `make`(1)-style parallel builds using the
 `-j` option; in fact, redo's parallel jobserver is compatible
 with GNU Make, so redo and make can share build tokens with
-each other.  redo can call a sub-make (eg. to build a
-subproject that uses Makefiles) or vice versa (eg. if a
+each other.  redo can call a sub-make (e.g. to build a
+subproject that uses Makefiles) or vice versa (e.g. if a
 make-based project needs to build a redo-based subproject).
 
 Unlike make, redo does not have any special syntax of its
@@ -59,17 +59,17 @@ dependencies.
 :   pass the -v option to /bin/sh when executing scripts. 
     This normally causes the shell to echo the .do script lines
     to stderr as it reads them.  Most shells will print the
-    exact source line (eg. `echo $3`) and not the
-    substituted value of variables (eg. `echo
+    exact source line (e.g. `echo $3`) and not the
+    substituted value of variables (e.g. `echo
     mytarget.redo.tmp`).
     
 -x, --xtrace
 :   pass the -x option to /bin/sh when executing scripts. 
     This normally causes the shell to echo exactly which
     commands are being executed.  Most shells will print
-    the substituted variables (eg. `echo
+    the substituted variables (e.g. `echo
     mytarget.redo.tmp`) and not the original source line
-    (eg. `echo $3`).
+    (e.g. `echo $3`).
     
 -k, --keep-going
 :   keep building as many targets as possible even if some
@@ -156,8 +156,8 @@ redo does not have this problem.)
 
 The three arguments passed to the .do script are:
 
-- $1: the target name (eg. mytarget.a.b)
-- $2: the basename of the target, minus its extension (eg. mytarget)
+- $1: the target name (e.g. mytarget.a.b)
+- $2: the base name of the target, minus its extension (e.g. mytarget)
 - $3: a temporary filename that the .do script should write
   its output to.
   
@@ -167,11 +167,11 @@ produced data to stdout.
 If the .do file is in the same directory as the target, $1
 is guaranteed to be a simple filename (with no path
 component).  If the .do file is in a parent directory of
-the target, $1 and $3 will be relative paths (ie. will
+the target, $1 and $3 will be relative paths (i.e. will
 contain slashes).
 
 redo is designed to update its targets atomically, and only
-if the do script succeeds (ie. returns a zero exit code). 
+if the do script succeeds (i.e. returns a zero exit code). 
 Thus, you should never write directly to the target file,
 only to $3 or stdout.
 
@@ -228,7 +228,7 @@ one or more of the following commands:
 
 When `redo` and related commands run, they maintain dependency information in
 an sqlite database in a directory called `.redo`. The `.redo` directory is
-automaticaly created the first time you run `redo` and related commands, and it
+automatically created the first time you run `redo` and related commands, and it
 persists thereafter.
 
 The directory where `.redo` goes is called the *base directory*. By default the
