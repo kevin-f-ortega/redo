@@ -9,4 +9,13 @@
 vars=$REDO_ROOT/version/vars
 redo-ifchange $vars $2.md
 . $vars
-sed -e "s/%VERSION%/$TAG/" -e "s/%DATE%/$DATE/" $2.md
+set -f
+while read line 
+do
+  if test "$line" = .CREDITS
+  then
+    cat credits.txt
+  else
+    echo $line
+  fi
+done < $2.md | sed -e "s/%VERSION%/$TAG/" -e "s/%DATE%/$DATE/"

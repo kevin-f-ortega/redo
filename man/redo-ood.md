@@ -44,14 +44,9 @@ ones, use `redo-targets`(1).
 # REDO
 
 Part of the `redo`(1) suite.
-    
-# CREDITS
 
-The original concept for `redo` was created by D. J.
-Bernstein and documented on his web site
-(http://cr.yp.to/redo.html).  This independent implementation
-was created by Avery Pennarun and you can find its source
-code at http://github.com/apenwarr/redo.
+
+.CREDITS
 
 
 # SEE ALSO
