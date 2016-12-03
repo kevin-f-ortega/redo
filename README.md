@@ -28,6 +28,9 @@ To date, I have made the following improvements to apenwarr `redo`:
 
 * Fixed the problem of [multiple inconsistent .redo directories](https://github.com/bocchino/redo/issues/1).
 
+* Improved the behavior when running a `.do` script would clobber an existing
+  directory.
+
 * Added cycle detection, so that redo prints an error message and halts
   instead of hanging when it encounters a cyclic build dependence.
 
