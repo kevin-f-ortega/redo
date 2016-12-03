@@ -5,7 +5,7 @@
 
 import sys, os, errno, glob, stat, fcntl, sqlite3
 import vars
-from helpers import unlink, close_on_exec, join
+from helpers import remove, close_on_exec, join
 from log import warn, err, debug2, debug3
 
 # ----------------------------------------------------------------------
@@ -320,7 +320,7 @@ def db():
             must_create = True
             _db = None
     if must_create:
-        unlink(dbfile)
+        remove(dbfile)
         _db = _connect(dbfile)
         _db.execute("create table Schema "
                     "    (version int)")

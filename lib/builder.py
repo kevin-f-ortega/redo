@@ -5,7 +5,7 @@
 
 import sys, os, errno, stat
 import vars, jobs, state, targets_seen, deps
-from helpers import unlink, close_on_exec, join
+from helpers import remove, rename, close_on_exec, join
 from log import log, log_, debug, debug2, err, warn
 
 # ---------------------------------------------------------------------- 
@@ -192,8 +192,8 @@ class BuildJob:
             else:
                 err('no rule to make %r\n' % t)
                 return self._after2(1)
-        unlink(self.tmpname1)
-        unlink(self.tmpname2)
+        _remove(self.tmpname1)
+        _remove(self.tmpname2)
         ffd = os.open(self.tmpname1, os.O_CREAT|os.O_RDWR|os.O_EXCL, 0666)
         close_on_exec(ffd, True)
         self.f = os.fdopen(ffd, 'w+')
@@ -299,21 +299,14 @@ class BuildJob:
             rv = 207
         if rv==0:
             if st2:
-                os.rename(self.tmpname2, t)
-                os.unlink(self.tmpname1)
+                _rename(self.tmpname2, t)
+                _remove(self.tmpname1)
             elif st1.st_size > 0:
-                try:
-                    os.rename(self.tmpname1, t)
-                except OSError, e:
-                    if e.errno == errno.ENOENT:
-                        unlink(t)
-                    else:
-                        raise
-                if st2:
-                    os.unlink(self.tmpname2)
+                _rename(self.tmpname1, t)
             else: # no output generated at all; that's ok
-                unlink(self.tmpname1)
-                unlink(t)
+                _remove(self.tmpname1)
+                if os.path.isfile(t):
+                    _remove(t)
             sf = self.sf
             sf.refresh()
             sf.is_generated = True
@@ -327,8 +320,8 @@ class BuildJob:
                 sf.update_stamp()
                 sf.set_changed()
         else:
-            unlink(self.tmpname1)
-            unlink(self.tmpname2)
+            _remove(self.tmpname1)
+            _remove(self.tmpname2)
             sf = self.sf
             sf.set_failed()
         sf.zap_deps2()
@@ -352,6 +345,22 @@ class BuildJob:
 # ----------------------------------------------------------------------
 # Private functions
 # ----------------------------------------------------------------------
+
+def _remove(path):
+    if os.path.isdir(path) and len(os.listdir(path)) > 0:
+        warn('directory %s is nonempty; not redoing\n' % path)
+        return False
+    else:
+        remove(path)
+        return True
+
+
+def _rename(src, dest):
+    status = _remove(dest)
+    if status:
+        rename(src, dest)
+    return status
+
 
 def _default_do_files(filename):
     l = filename.split('.')

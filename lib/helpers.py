@@ -3,7 +3,7 @@
 # Helper functions for redo implementation
 # ======================================================================
 
-import os, errno, fcntl
+import os, errno, fcntl, shutil
 
 def atoi(v):
     """
@@ -22,19 +22,25 @@ def join(between, l):
     return between.join(l)
 
 
-def unlink(f):
+def rename(src, dest):
     """
-    Delete a file at path 'f' if it currently exists.
-
-    Unlike os.unlink(), does not throw an exception if the file didn't already
-    exist.
+    Unconditionally rename a file or directory, even if it clobbers
+    an existing one
     """
-    try:
-        os.unlink(f)
-    except OSError, e:
-        if e.errno == errno.ENOENT:
-            pass  # it doesn't exist, that's what you asked for
+    if os.path.isdir(dest):
+        remove(dest)
+    os.rename(src, dest)
+    
 
+def remove(path):
+    """
+    Unconditionally remove a path name, whether file or directory
+    """
+    if os.path.isfile(path):
+        os.unlink(path)
+    elif os.path.isdir(path):
+        shutil.rmtree(path)
+      
 
 def close_on_exec(fd, yes):
     """
