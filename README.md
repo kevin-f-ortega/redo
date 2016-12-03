@@ -101,10 +101,8 @@ Edit the file so the following variables have the desired values:
   If you don't change anything, the installation will go into subdirectories
   of `$REDO_ROOT/installdir`, where `REDO_ROOT` is the top-level directory
   of this repository.
-  That may be what you want on a system where you don't have `sudo` permission.
-  However, in this case you won't have global access to the man pages by
-  running `man redo`.
-  To install `redo` globally, change `$REDO_ROOT/installdir` to something like `/usr`.
+  To install `redo` globally, change `$REDO_ROOT/installdir` 
+  to something like `/usr`.
 
 3. In the top-level directory of this repository, run `./do install`.
 Note that if you opted for a global installation in step 2, you may
