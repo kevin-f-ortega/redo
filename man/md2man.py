@@ -272,7 +272,7 @@ if g:
 
 inp = '\n'.join(lines)
 if AUTHOR:
-    inp += ('\n# AUTHOR\n\n%s\n' % AUTHOR).replace('<', '\\<')
+    inp += ('\n# AUTHOR\n\n%s\n' % AUTHOR)
 
 html = markdown.markdown(inp)
 soup = BeautifulSoup(html, convertEntities=BeautifulSoup.HTML_ENTITIES)

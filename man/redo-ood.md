@@ -1,5 +1,5 @@
 % redo-ood(1) Redo %VERSION%
-% Avery Pennarun <apenwarr@gmail.com>
+% Avery Pennarun (*apenwarr@gmail.com*)
 % %DATE%
 
 # NAME

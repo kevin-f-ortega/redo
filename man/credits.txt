@@ -1,6 +1,6 @@
 # CREDITS
 
 The original concept for `redo` is due to D. J. Bernstein
-(http://cr.yp.to/redo.html).  Avery Pennarun created this implementation
-(http://github.com/apenwarr/redo), and Rob Bocchino revised it
-(http://github.com/bocchino/redo).
+(*http://cr.yp.to/redo.html*). Avery Pennarun created this implementation
+(*http://github.com/apenwarr/redo*), and Rob Bocchino revised it
+(*http://github.com/bocchino/redo*).
