@@ -86,10 +86,11 @@ def main(targets, shouldbuildfunc):
                 break
             fid,t = locked.pop(0)
             target_list = targets_seen.get()
-            if t in target_list:
+            nice_t = _nice(t)
+            if nice_t in target_list:
                 # Target locked by parent: cyclic dependence
                 err('encountered a dependence cycle:\n')
-                _print_cycle(target_list, t)
+                _print_cycle(target_list, nice_t)
                 retcode[0] = 208
                 break
             lock = state.Lock(fid)
@@ -243,7 +244,7 @@ class BuildJob:
         def run():
             os.chdir(vars.BASE)
             os.environ['REDO_DEPTH'] = vars.DEPTH + '  '
-            targets_seen.add(self.t)
+            targets_seen.add(_nice(self.t))
             os.execvp(argv[0], argv)
             assert(0)
             # returns only if there's an exception
@@ -262,7 +263,7 @@ class BuildJob:
         os.environ['REDO_PWD'] = state.relpath(newp, vars.STARTDIR)
         os.environ['REDO_TARGET'] = self.basename + self.ext
         os.environ['REDO_DEPTH'] = vars.DEPTH + '  '
-        targets_seen.add(self.t)
+        targets_seen.add(_nice(self.t))
         if dn:
             os.chdir(dn)
         os.dup2(self.f.fileno(), 1)
