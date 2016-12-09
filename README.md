@@ -28,16 +28,22 @@ To date, I have made the following improvements to apenwarr `redo`:
 
 * Fixed the problem of [multiple inconsistent .redo directories](https://github.com/bocchino/redo/issues/1).
 
-* Improved the behavior when running a `.do` script would clobber an existing
-  directory.
+* Improved the behavior when running a `.do` script would 
+[clobber an existing directory](https://github.com/bocchino/redo/commit/f657dea710e1540eeb418bf74ab85148ebfc6cd1).
 
-* Added cycle detection, so that redo prints an error message and halts
+* Improved the error reporting when a 
+[remove or rename operation fails](https://github.com/bocchino/redo/commit/7fd7727aacf4aba26877a1de133a9f4dd44e2e6e)
+(e.g., when attempting to create a target in a directory that doesn't exist).
+
+* Added cycle detection, so that `redo` prints an error message and halts
   instead of hanging when it encounters a cyclic build dependence.
 
-* Fixed bugs that caused spurious warnings about updated files on 
+* Fixed bugs that caused 
+[spurious warnings about updated files](https://github.com/bocchino/redo/commit/5c2c7fb8b81207e06e03ea3dfb83237bbd7f4352) on 
   some systems.
 
-* Removed the deprecated "old-args" feature.
+* Removed the deprecated 
+["old-args" feature](https://github.com/bocchino/redo/commit/cba16d93f19d21527872e7379ba18462f29d8944).
 
 * Refactored the code.
 
