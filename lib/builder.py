@@ -91,7 +91,7 @@ def main(targets, shouldbuildfunc):
                 # Target locked by parent: cyclic dependence
                 err('encountered a dependence cycle:\n')
                 _print_cycle(target_list, nice_t)
-                retcode[0] = 208
+                retcode[0] = 209
                 break
             lock = state.Lock(fid)
             lock.trylock()
@@ -299,15 +299,19 @@ class BuildJob:
             err('...you should write status messages to stderr, not stdout.\n')
             rv = 207
         if rv==0:
-            if st2:
-                _rename(self.tmpname2, t)
-                _remove(self.tmpname1)
-            elif st1.st_size > 0:
-                _rename(self.tmpname1, t)
-            else: # no output generated at all; that's ok
-                _remove(self.tmpname1)
-                if os.path.isfile(t):
-                    _remove(t)
+            try:
+                if st2:
+                    _rename(self.tmpname2, t)
+                    _remove(self.tmpname1)
+                elif st1.st_size > 0:
+                    _rename(self.tmpname1, t)
+                else: # no output generated at all; that's ok
+                    _remove(self.tmpname1)
+                    if os.path.isfile(t):
+                        _remove(t)
+            except:
+                rv=208
+        if rv == 0:
             sf = self.sf
             sf.refresh()
             sf.is_generated = True
@@ -349,17 +353,25 @@ class BuildJob:
 
 def _remove(path):
     if os.path.isdir(path) and len(os.listdir(path)) > 0:
-        warn('directory %s is nonempty; not redoing\n' % path)
+        warn('directory %s is nonempty; not redoing\n' % _nice(path))
         return False
     else:
-        remove(path)
+        try:
+            remove(path)
+        except:
+            err('failed attempting to remove %s\n' % _nice(path))
+            raise
         return True
 
 
 def _rename(src, dest):
     status = _remove(dest)
     if status:
-        rename(src, dest)
+        try:
+            rename(src, dest)
+        except:
+            err('failed attempting to rename %s to %s\n' % (_nice(src), _nice(dest)))
+            raise
     return status
 
 
