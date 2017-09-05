@@ -9,6 +9,7 @@ vars_require_set INSTALL LIBDIR BINDIR
 
 $INSTALL -d $BINDIR
 
+evald $INSTALL -m 0755 $REDO_ROOT/'do' $BINDIR/'do'
 for py in $REDO_ROOT/lib/commands/*.py
 do
 	base=`basename $py .py`
