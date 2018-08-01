@@ -29,7 +29,7 @@ To date, I have made the following improvements to apenwarr `redo`:
 * Fixed the problem of [multiple inconsistent .redo directories](https://github.com/bocchino/redo/issues/1).
 
 * Improved the behavior when running a `.do` script would 
-[clobber an existing directory](https://github.com/bocchino/redo/commit/f657dea710e1540eeb418bf74ab85148ebfc6cd1).
+[clobber an existing directory](https://github.com/bocchino/redo/commit/434da58fd675189d37e81dafb52de1228bba605e).
 
 * Improved the error reporting when a 
 [remove or rename operation fails](https://github.com/bocchino/redo/commit/7fd7727aacf4aba26877a1de133a9f4dd44e2e6e)
