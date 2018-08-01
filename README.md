@@ -38,6 +38,10 @@ To date, I have made the following improvements to apenwarr `redo`:
 * Added cycle detection, so that `redo` prints an error message and halts
   instead of hanging when it encounters a cyclic build dependence.
 
+* Added a command `redo-remove` for removing dependency information
+about a file. This is useful, for example, if a file gets marked as generated
+but you later decide you want to maintain it by hand.
+
 * Fixed bugs that caused 
 [spurious warnings about updated files](https://github.com/bocchino/redo/commit/5c2c7fb8b81207e06e03ea3dfb83237bbd7f4352) on 
   some systems.
