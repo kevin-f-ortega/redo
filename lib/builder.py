@@ -3,7 +3,7 @@
 # Build redo targets
 # ======================================================================
 
-import sys, os, errno, stat
+import sys, os, errno, stat, re
 import vars, jobs, state, targets_seen, deps
 from helpers import remove, rename, close_on_exec, join
 from log import log, log_, debug, debug2, err, warn
@@ -352,7 +352,8 @@ class BuildJob:
 # ----------------------------------------------------------------------
 
 def _remove(path):
-    if os.path.isdir(path) and len(os.listdir(path)) > 0:
+    redo_tmp = re.search('\.redo.\.tmp', path)
+    if not redo_tmp and os.path.isdir(path) and len(os.listdir(path)) > 0:
         warn('directory %s is nonempty; not redoing\n' % _nice(path))
         return False
     else:
