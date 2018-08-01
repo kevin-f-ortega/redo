@@ -1,5 +1,5 @@
 % redo-base(1) Redo %VERSION%
-% Avery Pennarun (*apenwarr@gmail.com*)
+% Rob Bocchino (*bocchino@icloud.com*)
 % %DATE%
 
 # NAME
