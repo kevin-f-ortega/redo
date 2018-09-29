@@ -16,7 +16,7 @@ export REDO_ROOT=`canonicalize $REDO_ROOT`
 
 # Find and source definition files
 files=$REDO_ROOT/defs/*.sh
-redo-ifchange $DIR/defs.sh $files
+#redo-ifchange $DIR/defs.sh $files
 for file in $files
 do
   . $file
