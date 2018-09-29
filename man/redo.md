@@ -275,4 +275,4 @@ next time any part of the project is built.
 
 `sh`(1), `make`(1),
 `redo-ifchange`(1), `redo-ifcreate`(1), `redo-always`(1),
-`redo-stamp`(1), `redo-base` (1)
+`redo-stamp`(1), `redo-base`(1), `redo-remove`(1)

@@ -29,11 +29,11 @@ To date, I have made the following improvements to apenwarr `redo`:
 * Fixed the problem of [multiple inconsistent .redo directories](https://github.com/bocchino/redo/issues/1).
 
 * Improved the behavior when running a `.do` script would 
-[clobber an existing directory](https://github.com/bocchino/redo/commit/434da58fd675189d37e81dafb52de1228bba605e).
+  [clobber an existing directory](https://github.com/bocchino/redo/commit/434da58fd675189d37e81dafb52de1228bba605e).
 
 * Improved the error reporting when a 
-[remove or rename operation fails](https://github.com/bocchino/redo/commit/7fd7727aacf4aba26877a1de133a9f4dd44e2e6e)
-(e.g., when attempting to create a target in a directory that doesn't exist).
+  [remove or rename operation fails](https://github.com/bocchino/redo/commit/7fd7727aacf4aba26877a1de133a9f4dd44e2e6e)
+  (e.g., when attempting to create a target in a directory that doesn't exist).
 
 * Added cycle detection, so that `redo` prints an error message and halts
   instead of hanging when it encounters a cyclic build dependence.
@@ -88,7 +88,17 @@ To use this software, you need the following:
 
 2. A working python 2 installation.
 
-3. A shell capable of running the `.do` files in this repository (e.g., `bash`).
+3. The following Python packages, needed for generating the man pages:
+
+    `markdown`
+    `BeautifulSoup`
+
+  You can install these packages with `easy_install` or `pip`,
+  e.g., `easy_install markdown BeautifulSoup`.
+  If you don't have these packages installed, then you will be able to build and
+  install `redo`, but you won't be able to generate the man pages.
+
+4. A shell capable of running the `.do` files in this repository (e.g., `bash`).
 Any modern Unix system should have such a shell, and the installation procedure
 should find it (see below).
 
