@@ -1,10 +1,10 @@
 #!/bin/sh -e
 
 # ---------------------------------------------------------------------- 
-# install.do
+# install
 # Install redo
 # ---------------------------------------------------------------------- 
 
 . ./defs.sh
 
-subdir_targets redo install
+subdir_commands install

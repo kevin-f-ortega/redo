@@ -39,15 +39,15 @@ To date, I have made the following improvements to apenwarr `redo`:
   instead of hanging when it encounters a cyclic build dependence.
 
 * Added a command `redo-remove` for removing dependency information
-about a file. This is useful, for example, if a file gets marked as generated
-but you later decide you want to maintain it by hand.
+  about a file. This is useful, for example, if a file gets marked as generated
+  but you later decide you want to maintain it by hand.
 
 * Fixed bugs that caused 
-[spurious warnings about updated files](https://github.com/bocchino/redo/commit/5c2c7fb8b81207e06e03ea3dfb83237bbd7f4352) on 
+  [spurious warnings about updated files](https://github.com/bocchino/redo/commit/5c2c7fb8b81207e06e03ea3dfb83237bbd7f4352) on 
   some systems.
 
 * Removed the deprecated 
-["old-args" feature](https://github.com/bocchino/redo/commit/cba16d93f19d21527872e7379ba18462f29d8944).
+  ["old-args" feature](https://github.com/bocchino/redo/commit/cba16d93f19d21527872e7379ba18462f29d8944).
 
 * Refactored the code.
 
@@ -68,7 +68,7 @@ that builds everything without tracking any dependencies.
 It is useful for running `.do` files on systems where `redo`
 is not available.
 In particular, you run `do` on the build system in this repository
-when you install `redo` (see below).
+to build everything before installing `redo` (see below).
 
 * `lib`: The "library files" for the `redo` tool suite (they are python files).
 
@@ -117,16 +117,20 @@ Edit the file so the following variables have the desired values:
   To install `redo` globally, change `$REDO_ROOT/installdir` 
   to something like `/usr`.
 
-3. In the top-level directory of this repository, run `./do install`.
-Note that if you opted for a global installation in step 2, you may
-have to run the command with `sudo` permission (i.e., `sudo ./do install`).
+3. In the top-level directory of this repository, run `./do all`.
+This step should build everything without errors.
+If there are any errors, fix them.
 
-4. If the directory that you picked for `$BINDIR` in step 2 is not already in your 
+4. In the top-level directory of this repository, run `./install`.
+Note that if you opted for a global installation in step 2, you may
+have to run `sudo ./install`.
+
+5. If the directory that you picked for `$BINDIR` in step 2 is not already in your 
 Unix `PATH`, then add it now.
 It's best to do this in the startup configuration file for your shell
 (e.g., `.bashrc`).
 
-5. Check that you have a good `redo` installation: `which redo`.
+6. Check that you have a good `redo` installation: `which redo`.
 
 Once you have a working installation, you should be able to run `redo` on
 any of the `.do` files in this repository. For example:

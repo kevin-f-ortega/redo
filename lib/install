@@ -1,13 +1,21 @@
 #!/bin/sh -e
 
 # ----------------------------------------------------------------------
-# install.do
-# Install version
+# install
+# Install redo lib files
 # ----------------------------------------------------------------------
 
 . ./defs.sh
 
-redo-ifchange version.py
+vars_require_set INSTALL LIBDIR
 
 evald $INSTALL -d $LIBDIR
-evald $INSTALL -m 0644 version.py $LIBDIR/version.py
+
+for py in *.py
+do
+	evald $INSTALL -m 0644 $py $LIBDIR/$py
+done
+
+subdir_commands install
+
+evald python -mcompileall $LIBDIR

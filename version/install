@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+# ----------------------------------------------------------------------
+# install
+# Install version
+# ----------------------------------------------------------------------
+
+. ./defs.sh
+
+evald $INSTALL -d $LIBDIR
+evald $INSTALL -m 0644 version.py $LIBDIR/version.py

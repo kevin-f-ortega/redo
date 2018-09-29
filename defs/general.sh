@@ -40,6 +40,19 @@ doall()
   done
 }
 
+# Do command in all subdirectories
+subdir_commands()
+{
+  commands=`find . -mindepth 2 -maxdepth 2 -name $1`
+  shift
+  for command in $commands
+  do
+    dir=`dirname $command`
+    base=`basename $command`
+    (cd $dir; evald ./$base "$@")
+  done
+}
+
 # Remove temporary files
 rm_tmp()
 {

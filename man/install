@@ -1,15 +1,13 @@
 #!/bin/sh -e
 
 # ----------------------------------------------------------------------
-# install.do
+# install
 # Install man pages
 # ----------------------------------------------------------------------
 
 . ./defs.sh
 
 vars_require_set INSTALL MANDIR
-
-redo-ifchange all
 
 evald $INSTALL -d $MANDIR/man1
 

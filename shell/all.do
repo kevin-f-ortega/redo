@@ -6,5 +6,4 @@
 
 . ./defs.sh
 
-subdir_targets redo-ifchange all
-
+redo-ifchange sh
