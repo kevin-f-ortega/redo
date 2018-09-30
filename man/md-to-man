@@ -1,5 +1,5 @@
 #!/bin/sh -e
-#
+
 # ----------------------------------------------------------------------
 # md-to-man
 # ----------------------------------------------------------------------
@@ -11,6 +11,5 @@ if ./md2man.py </dev/null >/dev/null
 then
 	./md2man.py $2.md.tmp | grep -v '\.IP "   " 3'
 else
-	echoerr "[ md-to-man: skipping $1: missing python modules ]"
-	echoerr "[ try this: sudo easy_install markdown BeautifulSoup ]"
+	echoerr "md-to-man: skipping $1: missing python modules"
 fi
