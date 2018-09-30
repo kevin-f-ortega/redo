@@ -148,3 +148,14 @@ any of the `.do` files in this repository. For example:
     redo clean # To clean everything
     redo all # To build everything
     redo tests/test # To run all the tests in the tests directory
+
+## Upgrading
+
+Once you have a working installation, you can upgrade your installation
+as follows:
+
+1. Pull the latest version of this repository.
+
+2. Run `redo` at the top level to build everthing.
+
+3. Run `install` to re-install everything.
