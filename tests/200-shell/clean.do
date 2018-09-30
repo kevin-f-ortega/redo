@@ -1,1 +1,1 @@
-rm -f broken nonshelltest shellfile chicken.vartest *~ .*~
+rm -f broken nonshelltest shellfile chicken.vartest *~ .*~ *.did

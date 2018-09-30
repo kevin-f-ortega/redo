@@ -1,1 +1,1 @@
-rm -f mode1 *~ .*~
+rm -f mode1 *~ .*~ *.did

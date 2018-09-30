@@ -1,1 +1,2 @@
-redo "space dir/clean"
+redo "space dir/clean" 
+rm -f *.did

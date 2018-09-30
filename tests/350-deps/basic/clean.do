@@ -1,2 +1,2 @@
-rm -f *~ .*~ *.log *.out
+rm -f *~ .*~ *.log *.out *.did
 

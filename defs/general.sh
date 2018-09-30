@@ -56,5 +56,5 @@ subdir_commands()
 # Remove temporary files
 rm_tmp()
 {
-  doall 'rm -R' '*~' '.*~' '*.tmp' '.do_built*'
+  doall 'rm -R' '*~' '.*~' '*.tmp' '.do_built*' '*.did'
 }

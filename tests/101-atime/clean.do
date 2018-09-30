@@ -1,1 +1,1 @@
-rm -f atime2 *~ .*~
+rm -f atime2 *~ .*~ *.did

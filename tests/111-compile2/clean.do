@@ -1,1 +1,1 @@
-rm -f *.tmp *~ *.o hello CC
+rm -f *.tmp *~ *.o hello CC *.did

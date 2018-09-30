@@ -1,1 +1,1 @@
-rm -f touch1 *~ .*~
+rm -f touch1 *~ .*~ *.did

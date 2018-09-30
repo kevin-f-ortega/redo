@@ -1,2 +1,2 @@
 rm -rf *.tmp
-rm -f *~ .*~
+rm -f *~ .*~ *.did

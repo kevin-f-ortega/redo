@@ -1,1 +1,1 @@
-rm -f *~ .*~ "space 2"
+rm -f *~ .*~ "space 2" *.did

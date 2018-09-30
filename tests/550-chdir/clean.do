@@ -1,1 +1,1 @@
-rm -f chdir1 *~ .*~
+rm -f chdir1 *~ .*~ *.did
