@@ -20,6 +20,8 @@ apenwarr `redo`.
 2. As development on apenwarr `redo` seems to have stopped, to continue
    development, including code refactoring, enhancements, and bug fixes.
 
+*Note (January 2019):* Development on apenwarr redo has started again as of October 2018. 
+
 ## Contributions
 
 To date, I have made the following improvements to apenwarr `redo`:
