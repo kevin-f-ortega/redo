@@ -1,7 +1,7 @@
 # The redo Build System
 
 *This repository is based on code and documentation licensed from Avery Pennarun.
-Original contributions are copyright (C) 2016-2018 by Rob Bocchino.*
+Original contributions are copyright (C) 2016-2020 by Rob Bocchino.*
 
 This repository is a fork of 
 [Avery Pennarun's implementation of `redo`](https://github.com/apenwarr/redo) 
