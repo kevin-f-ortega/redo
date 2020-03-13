@@ -148,7 +148,7 @@ class BuildJob:
             if dirty == deps.CLEAN:
                 # target doesn't need to be built; skip the whole task
                 return self._after2(0)
-        except ImmediateReturn, e:
+        except ImmediateReturn as e:
             return self._after2(e.rv)
 
         if vars.NO_UNLOCKED or dirty == deps.DIRTY:
@@ -194,7 +194,7 @@ class BuildJob:
                 return self._after2(1)
         _remove(self.tmpname1)
         _remove(self.tmpname2)
-        ffd = os.open(self.tmpname1, os.O_CREAT|os.O_RDWR|os.O_EXCL, 0666)
+        ffd = os.open(self.tmpname1, os.O_CREAT|os.O_RDWR|os.O_EXCL, 0o666)
         close_on_exec(ffd, True)
         self.f = os.fdopen(ffd, 'w+')
         # this will run in the dofile's directory, so use only basenames here
@@ -430,7 +430,7 @@ def _print_cycle(target_list, t):
 def _try_stat(filename):
     try:
         return os.stat(filename)
-    except OSError, e:
+    except OSError as e:
         if e.errno == errno.ENOENT:
             return None
         else:

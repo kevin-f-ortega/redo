@@ -237,12 +237,12 @@ class Options:
         """
         try:
             (flags,extra) = self.optfunc(args, self._shortopts, self._longopts)
-        except getopt.GetoptError, e:
+        except (getopt.GetoptError, e):
             self.fatal(e)
 
         opt = OptDict()
 
-        for k,v in self._defaults.iteritems():
+        for k,v in self._defaults.items():
             k = self._aliases[k]
             opt[k] = v
 
@@ -266,6 +266,6 @@ class Options:
                 else:
                     v = _intify(v)
             opt[k] = v
-        for (f1,f2) in self._aliases.iteritems():
+        for (f1,f2) in self._aliases.items():
             opt[f1] = opt._opts.get(f2)
         return (opt,flags,extra)

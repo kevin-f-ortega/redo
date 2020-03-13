@@ -9,4 +9,4 @@ import vars_init
 vars_init.init([])
 import vars
 
-print vars.BASE
+print(vars.BASE)

@@ -21,4 +21,4 @@ for f in state.files():
     if f.name.startswith('//'):
         continue  # special name, ignore
     if not f.is_generated and f.read_stamp() != state.STAMP_MISSING:
-        print f.nicename()
+        print(f.nicename())

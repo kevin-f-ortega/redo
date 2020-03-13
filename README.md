@@ -1,4 +1,5 @@
 # The redo Build System
+
 *This repository is based on code and documentation licensed from Avery Pennarun.
 Original contributions are copyright (C) 2016-2018 by Rob Bocchino.*
 
@@ -26,32 +27,34 @@ apenwarr `redo`.
 
 To date, I have made the following improvements to apenwarr `redo`:
 
-1. Improved the installation procedure.
+1.  Improved the installation procedure.
 
-2. Fixed the problem of [multiple inconsistent .redo directories](https://github.com/bocchino/redo/issues/1).
+2.  Fixed the problem of [multiple inconsistent .redo directories](https://github.com/bocchino/redo/issues/1).
 
-3. Improved the behavior when running a `.do` script would 
-   [clobber an existing directory](https://github.com/bocchino/redo/commit/434da58fd675189d37e81dafb52de1228bba605e).
+3.  Improved the behavior when running a `.do` script would 
+    [clobber an existing directory](https://github. com/bocchino/redo/commit/434da58fd675189d37e81dafb52de1228bba605e).
 
-4. Improved the error reporting when a 
-   [remove or rename operation fails](https://github.com/bocchino/redo/commit/7fd7727aacf4aba26877a1de133a9f4dd44e2e6e)
-   (e.g., when attempting to create a target in a directory that doesn't exist).
+4.  Improved the error reporting when a 
+    [remove or rename operation fails](https://github. com/bocchino/redo/commit/7fd7727aacf4aba26877a1de133a9f4dd44e2e6e)
+    (e. g., when attempting to create a target in a directory that doesn't exist).
 
-5. Added cycle detection, so that `redo` prints an error message and halts
-   instead of hanging when it encounters a cyclic build dependence.
+5.  Added cycle detection, so that `redo` prints an error message and halts
+    instead of hanging when it encounters a cyclic build dependence. 
 
-6. Added a command `redo-remove` for removing dependency information
-   about a file. This is useful, for example, if a file gets marked as generated
-   but you later decide you want to maintain it by hand.
+6.  Added a command `redo-remove` for removing dependency information
+    about a file.  This is useful, for example, if a file gets marked as generated
+    but you later decide you want to maintain it by hand. 
 
-7. Fixed bugs that caused 
-   [spurious warnings about updated files](https://github.com/bocchino/redo/commit/5c2c7fb8b81207e06e03ea3dfb83237bbd7f4352) on 
-   some systems.
+7.  Fixed bugs that caused 
+    [spurious warnings about updated files](https://github. com/bocchino/redo/commit/5c2c7fb8b81207e06e03ea3dfb83237bbd7f4352) on 
+    some systems. 
 
-8. Removed the deprecated 
-   ["old-args" feature](https://github.com/bocchino/redo/commit/cba16d93f19d21527872e7379ba18462f29d8944).
+8.  Removed the deprecated 
+    ["old-args" feature](https://github.com/bocchino/redo/commit/cba16d93f19d21527872e7379ba18462f29d8944).
 
-9. Refactored the code.
+9.  Refactored the code.
+
+10. Revised the code to be Python 3 compatible.
 
 *Note (January 2019):* It looks like apenwarr redo has fixed issues 1, 4, 5, 7, 
 and 8, in part by merging code from this repository.
@@ -96,7 +99,7 @@ To use this software, you need the following:
 
 1. A Unix environment.
 
-2. A working python 2 installation.
+2. A working Python 3 installation.
 
 3. The following Python packages, needed for generating the man pages:
 

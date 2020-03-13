@@ -66,7 +66,7 @@ def setup(maxjobs):
         try:
             fcntl.fcntl(a, fcntl.F_GETFL)
             fcntl.fcntl(b, fcntl.F_GETFL)
-        except IOError, e:
+        except IOError as e:
             if e.errno == errno.EBADF:
                 raise ValueError('broken --jobserver-fds from make; prefix your Makefile rule with a "+"')
             else:
@@ -87,7 +87,7 @@ def put_token():
     """
     global _has_token
     assert(_has_token)
-    os.write(_pipe[1], 't')
+    os.write(_pipe[1], 't'.encode())
     _has_token = False
 
 
@@ -142,13 +142,13 @@ def wait_all():
     _debug("wait_all: empty list\n")
     get_token('self')  # get our token back
     if _toplevel:
-        bb = ''
+        bb = b''
         while 1:
             b = _try_read(_pipe[0], 8192)
             bb += b
             if not b: break
         if len(bb) != _toplevel-1:
-            raise Exception('on exit: expected %d tokens; found only %r' 
+            raise Exception('on exit: expected %d tokens; found %r' 
                             % (_toplevel-1, len(bb)))
         if _pipe:
           os.write(_pipe[1], bb)
@@ -162,7 +162,7 @@ def force_return_tokens():
     if n:
         _debug('%d tokens left in force_return_tokens\n' % n)
     _debug('returning %d tokens\n' % n)
-    for k in _completion_map.keys():
+    for k in list(_completion_map):
         del _completion_map[k]
     if _pipe:
         _put_tokens(n)
@@ -212,7 +212,7 @@ def _wait_internal_or_external():
     Internal work is the completion of a build started by this process.
     External work is a token placed on _pipe[0] by this or another process.
     """
-    rfds = _completion_map.keys()
+    rfds = list(_completion_map)
     if _pipe:
         rfds.append(_pipe[0])
     _wait(rfds)
@@ -221,7 +221,7 @@ def _wait_internal_only():
     """
     Wait for internal work only.
     """
-    rfds = _completion_map.keys()
+    rfds = list(_completion_map)
     _wait(rfds)
 
 def _wait(rfds):
@@ -279,7 +279,7 @@ def _put_tokens(n):
     else:
         num_to_put = 0
     if num_to_put > 0:
-        os.write(_pipe[1], 't' * num_to_put)
+        os.write(_pipe[1], ('t' * num_to_put).encode())
 
 
 def _timeout(sig, frame):
@@ -310,7 +310,7 @@ def _try_read(fd, n):
     # compatible with GNU Make, and they can't handle it.
     r,w,x = select.select([fd], [], [], 0)
     if not r:
-        return ''  # try again
+        return b''  # try again
     # Ok, the socket is readable - but some other process might get there
     # first.  We have to set an alarm() in case our read() gets stuck.
     oldh = signal.signal(signal.SIGALRM, _timeout)
@@ -318,10 +318,10 @@ def _try_read(fd, n):
         signal.alarm(1)  # Emergency fallback
         try:
             b = os.read(_pipe[0], 1)
-        except OSError, e:
+        except OSError as e:
             if e.errno in (errno.EAGAIN, errno.EINTR):
                 # Interrupted or it was nonblocking
-                return ''  # Try again
+                return b''  # Try again
             else:
                 raise
     finally:

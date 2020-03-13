@@ -73,9 +73,16 @@ def isdirty(
             debug('%s-- DIRTY (created)\n' % depth)
             status = DIRTY
         elif mode == 'm':
+            def _max(a, b):
+                if a == None:
+                    return b
+                elif b == None:
+                    return a
+                else:
+                    return max(a, b)
             sub = isdirty(f2, depth = depth + '  ',
-                          max_changed = max(f.changed_runid,
-                                            f.checked_runid),
+                          max_changed = _max(f.changed_runid,
+                                             f.checked_runid),
                           is_checked=is_checked, set_checked=set_checked)
             if sub:
                 debug('%s-- DIRTY (sub)\n' % depth)

@@ -29,7 +29,7 @@ targets = extra
 
 if opt.version:
     import version
-    print version.TAG
+    print(version.TAG)
     sys.exit(0)
 if opt.debug:
     os.environ['REDO_DEBUG'] = str(opt.debug or 0)

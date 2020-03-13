@@ -197,7 +197,7 @@ class Lock:
         self.owned = False
         self.fid = fid
         self.lockfile = os.open(os.path.join(vars.BASE, '.redo/lock.%d' % fid),
-                                os.O_RDWR | os.O_CREAT, 0666)
+                                os.O_RDWR | os.O_CREAT, 0o666)
         close_on_exec(self.lockfile, True)
         assert(_locks.get(fid,0) == 0)
         _locks[fid] = 1
@@ -212,7 +212,7 @@ class Lock:
         assert(not self.owned)
         try:
             fcntl.lockf(self.lockfile, fcntl.LOCK_EX|fcntl.LOCK_NB, 0, 0)
-        except IOError, e:
+        except IOError as e:
             if e.errno in (errno.EAGAIN, errno.EACCES):
                 pass  # someone else has it locked
             else:
@@ -264,7 +264,7 @@ def relpath(t, base):
     base = os.path.normpath(base)
     tparts = t.split('/')
     bparts = base.split('/')
-    for tp,bp in zip(tparts,bparts):
+    for tp,bp in list(zip(tparts,bparts)):
         if tp != bp:
             break
         tparts.pop(0)
@@ -272,7 +272,8 @@ def relpath(t, base):
     while bparts:
         tparts.insert(0, '..')
         bparts.pop(0)
-    return join('/', tparts)
+    result = join('/', tparts)
+    return result
 
 
 def warn_override(name):
@@ -300,7 +301,7 @@ def db():
     dbfile = '%s/db.sqlite3' % dbdir
     try:
         os.mkdir(dbdir)
-    except OSError, e:
+    except OSError as e:
         if e.errno == errno.EEXIST:
             pass  # if it exists, that's okay
         else:

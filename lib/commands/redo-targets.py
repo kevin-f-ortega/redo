@@ -19,4 +19,4 @@ if len(sys.argv[1:]) != 0:
 
 for f in state.files():
     if f.is_generated and f.read_stamp() != state.STAMP_MISSING:
-        print f.nicename()
+        print(f.nicename())

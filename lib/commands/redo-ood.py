@@ -37,4 +37,4 @@ for f in state.files():
             set_checked=set_checked
         )
         if not dirty == deps.CLEAN:
-            print f.nicename()
+            print(f.nicename())
