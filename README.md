@@ -32,11 +32,11 @@ To date, I have made the following improvements to apenwarr `redo`:
 2.  Fixed the problem of [multiple inconsistent .redo directories](https://github.com/bocchino/redo/issues/1).
 
 3.  Improved the behavior when running a `.do` script would 
-    [clobber an existing directory](https://github. com/bocchino/redo/commit/434da58fd675189d37e81dafb52de1228bba605e).
+    [clobber an existing directory](https://github.com/bocchino/redo/commit/434da58fd675189d37e81dafb52de1228bba605e).
 
 4.  Improved the error reporting when a 
-    [remove or rename operation fails](https://github. com/bocchino/redo/commit/7fd7727aacf4aba26877a1de133a9f4dd44e2e6e)
-    (e. g., when attempting to create a target in a directory that doesn't exist).
+    [remove or rename operation fails](https://github.com/bocchino/redo/commit/7fd7727aacf4aba26877a1de133a9f4dd44e2e6e)
+    (e.g., when attempting to create a target in a directory that doesn't exist).
 
 5.  Added cycle detection, so that `redo` prints an error message and halts
     instead of hanging when it encounters a cyclic build dependence. 
@@ -46,7 +46,7 @@ To date, I have made the following improvements to apenwarr `redo`:
     but you later decide you want to maintain it by hand. 
 
 7.  Fixed bugs that caused 
-    [spurious warnings about updated files](https://github. com/bocchino/redo/commit/5c2c7fb8b81207e06e03ea3dfb83237bbd7f4352) on 
+    [spurious warnings about updated files](https://github.com/bocchino/redo/commit/5c2c7fb8b81207e06e03ea3dfb83237bbd7f4352) on 
     some systems. 
 
 8.  Removed the deprecated 
@@ -56,7 +56,7 @@ To date, I have made the following improvements to apenwarr `redo`:
 
 10. Revised the code to be Python 3 compatible.
 
-11. Checked in the troff man pages and removed the dependence on md2man.
+11. Checked in the troff man pages and removed the dependence on `md2man`.
 It stopped working with the upgrade to Python 3.
 
 It looks like apenwarr redo has fixed issues 1, 4, 5, 7, 
