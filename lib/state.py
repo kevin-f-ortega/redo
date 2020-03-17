@@ -71,7 +71,7 @@ class File(object):
         (self.id, self.name, self.is_generated, self.is_override,
          self.checked_runid, self.changed_runid, self.failed_runid,
          self.stamp, self.csum) = cols
-        if self.name == ALWAYS and self.changed_runid < vars.RUNID:
+        if self.name == ALWAYS and self.changed_runid != None and self.changed_runid < vars.RUNID:
             self.changed_runid = vars.RUNID
     
     def __init__(self, id=None, name=None, cols=None):
