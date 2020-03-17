@@ -1,0 +1,29 @@
+.TH REDO-REMOVE 1 2020-03-12 "Redo 0.11-119-g209cead" "User Commands"
+.ad l
+.nh
+.SH NAME
+redo-remove - remove dependency information
+.SH SYNOPSIS
+redo-remove [targets...]
+.SH DESCRIPTION
+\fBredo-remove\fR removes all dependency information for each
+of its targets.
+This is useful, for example, if you generate a file \fBfoo\fR
+with a do file \fBfoo.do\fR, but later decide that you want
+to maintain \fBfoo\fR by hand.
+In this case, \fBredo\fR remembers that \fBfoo\fR is a generated file,
+so from then on it will print a warning message whenever
+you run \fBredo-ifchange foo\fR (as you might want to do, if
+some other file depends on the handwritten version of \fBfoo\fR).
+Running \fBredo-remove foo\fR makes this warning message go away.
+.SH REDO
+Part of the \fBredo\fR(1) suite.
+.SH CREDITS
+The original concept for \fBredo\fR is due to D. J. Bernstein
+(\fIhttp://cr.yp.to/redo.html\fR). Avery Pennarun created this implementation
+(\fIhttp://github.com/apenwarr/redo\fR), and Rob Bocchino revised it
+(\fIhttp://github.com/bocchino/redo\fR).
+.SH "SEE ALSO"
+\fBredo\fR(1)
+.SH AUTHOR
+Rob Bocchino (\fIbocchino@icloud.com\fR)

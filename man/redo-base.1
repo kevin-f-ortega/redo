@@ -1,0 +1,32 @@
+.TH REDO-BASE 1 2020-03-12 "Redo 0.11-119-g209cead" "User Commands"
+.ad l
+.nh
+.SH NAME
+redo-base - print the base directory for redo builds
+.SH SYNOPSIS
+redo-base
+.SH DESCRIPTION
+\fBredo-base\fR prints the \fIbase directory\fR, i.e., the directory
+where \fBredo\fR dependency information is stored for builds
+initiated from the current directory.
+.PP
+The algorithm for finding the base directory is as follows:
+.IP " \[bu] " 3
+Starting in the current directory, search upwards for
+files named \fB.redo-base\fR.
+.IP " \[bu] " 3
+If any such file is found, then the topmost directory
+containing such a file is the base directory.
+.IP " \[bu] " 3
+Otherwise the base directory is the home directory.
+.SH REDO
+Part of the \fBredo\fR(1) suite.
+.SH CREDITS
+The original concept for \fBredo\fR is due to D. J. Bernstein
+(\fIhttp://cr.yp.to/redo.html\fR). Avery Pennarun created this implementation
+(\fIhttp://github.com/apenwarr/redo\fR), and Rob Bocchino revised it
+(\fIhttp://github.com/bocchino/redo\fR).
+.SH "SEE ALSO"
+\fBredo\fR(1)
+.SH AUTHOR
+Rob Bocchino (\fIbocchino@icloud.com\fR)

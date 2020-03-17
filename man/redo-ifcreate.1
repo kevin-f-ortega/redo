@@ -1,0 +1,33 @@
+.TH REDO-IFCREATE 1 2020-03-12 "Redo 0.11-119-g209cead" "User Commands"
+.ad l
+.nh
+.SH NAME
+redo-ifcreate - rebuild the current target if source files are created
+.SH SYNOPSIS
+redo-ifcreate [sources...]
+.SH DESCRIPTION
+Normally redo-ifcreate is run from a .do file that has been
+executed by \fBredo\fR(1). See \fBredo\fR(1) for more details.
+.PP
+redo-ifcreate takes a list of nonexistent files (\fIsources\fR)
+and adds them as dependencies to the current target (the
+one calling redo-ifcreate). If any of those files are
+created in the future, the target will be marked as needing
+to be rebuilt.
+.PP
+If one of the given files exists at the time redo-ifcreate
+is called, it will return a nonzero exit code.
+.PP
+If you want to declare dependencies on files that already
+exist, use \fBredo-ifchange\fR(1) instead.
+.SH REDO
+Part of the \fBredo\fR(1) suite.
+.SH CREDITS
+The original concept for \fBredo\fR is due to D. J. Bernstein
+(\fIhttp://cr.yp.to/redo.html\fR). Avery Pennarun created this implementation
+(\fIhttp://github.com/apenwarr/redo\fR), and Rob Bocchino revised it
+(\fIhttp://github.com/bocchino/redo\fR).
+.SH "SEE ALSO"
+\fBredo\fR(1), \fBredo-ifchange\fR(1), \fBredo-always\fR(1), \fBredo-stamp\fR(1)
+.SH AUTHOR
+Avery Pennarun (\fIapenwarr@gmail.com\fR)

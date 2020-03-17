@@ -1,0 +1,38 @@
+.TH REDO-SOURCES 1 2020-03-12 "Redo 0.11-119-g209cead" "User Commands"
+.ad l
+.nh
+.SH NAME
+redo-sources - print the list of all known redo sources
+.SH SYNOPSIS
+redo-sources
+.SH DESCRIPTION
+redo-sources prints a list of all redo \fIsource\fR files that
+still exist.
+.PP
+A source file is any file that has been listed as a
+dependency (using \fBredo-ifchange\fR(1) or \fBredo-ifcreate\fR(1))
+but is not itself a target. A target is a file that
+\fBredo\fR(1) can build using a .do script.
+.PP
+Each filename is on a separate line. The filenames are not
+guaranteed to be in any particular order.
+.PP
+All filenames are printed relative the current directory.
+The list is not filtered in any way; it contains \fIall\fR the
+source filenames from the entire project. Remember that
+the redo database may span more than just your project, so
+you might need to filter the list before using it.
+.PP
+If you want a list of targets instead of sources, use
+\fBredo-targets\fR(1) or \fBredo-ood\fR(1).
+.SH REDO
+Part of the \fBredo\fR(1) suite.
+.SH CREDITS
+The original concept for \fBredo\fR is due to D. J. Bernstein
+(\fIhttp://cr.yp.to/redo.html\fR). Avery Pennarun created this implementation
+(\fIhttp://github.com/apenwarr/redo\fR), and Rob Bocchino revised it
+(\fIhttp://github.com/bocchino/redo\fR).
+.SH "SEE ALSO"
+\fBredo\fR(1), \fBredo-targets\fR(1), \fBredo-ood\fR(1)
+.SH AUTHOR
+Avery Pennarun (\fIapenwarr@gmail.com\fR)

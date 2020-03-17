@@ -1,0 +1,75 @@
+.TH REDO-IFCHANGE 1 2020-03-12 "Redo 0.11-119-g209cead" "User Commands"
+.ad l
+.nh
+.SH NAME
+redo-ifchange - rebuild target files when source files have changed
+.SH SYNOPSIS
+redo-ifchange [targets...]
+.SH DESCRIPTION
+Normally redo-ifchange is run from a .do file that has been
+executed by \fBredo\fR(1). See \fBredo\fR(1) for more details.
+.PP
+redo-ifchange doesn't take any command line options other
+than a list of \fItargets\fR. To provide command line options,
+you need to run \fBredo\fR instead.
+.PP
+redo-ifchange performs the following steps:
+.IP " \[bu] " 3
+it creates a dependency on the given \fItargets\fR. If any
+of those targets change in the future, the current target
+(the one calling redo-ifchange) will marked as needing to
+be rebuilt.
+.IP " \[bu] " 3
+for any \fItarget\fR that is out of date, it calls the
+equivalent of \fBredo target\fR.
+.IP " \[bu] " 3
+for any \fItarget\fR that is locked (because some other
+instance of \fBredo\fR or \fBredo-ifchange\fR is already building
+it), it waits until the lock is released.
+.PP
+redo-ifchange returns only after all the given
+\fItargets\fR are known to be up to date.
+.SH "TIP 1"
+You don't have to run redo-ifchange \fIbefore\fR generating
+your target; you can generate your target first, then
+declare its dependencies. For example, as part of
+compiling a .c file, gcc learns the list
+of .h files it depends on. You can pass this information
+along to redo-ifchange, so if any of those headers are
+changed or deleted, your .c file will be rebuilt:
+.PP
+redo-ifchange $2.c
+gcc -o $3 -c $2.c -MMD -MF $2.deps
+read DEPS <$2.deps
+redo-ifchange ${DEPS#*:}
+.PP
+This is much less confusing than the equivalent
+autodependency mechanism in \fBmake\fR(1), because make
+requires that you declare all your dependencies before
+running the target build commands.
+.SH "TIP 2"
+Try to list as many dependencies as possible in a single
+call to redo-ifchange. Every time you run redo-ifchange,
+the shell has to fork+exec it, which takes time. Plus redo
+can only parallelize your build if you give it multiple
+targets to build at once. It's fine to have a couple of
+separate redo-ifchange invocations for a particular target
+when necessary (as in TIP 1 above), but try to keep it to a
+minimum. For example here's a trick for generating a list
+of targets, but redo-ifchanging them all at once:
+.PP
+for d in *.c; do
+echo ${d%.c}.o
+done |
+xargs redo-ifchange
+.SH REDO
+Part of the \fBredo\fR(1) suite.
+.SH CREDITS
+The original concept for \fBredo\fR is due to D. J. Bernstein
+(\fIhttp://cr.yp.to/redo.html\fR). Avery Pennarun created this implementation
+(\fIhttp://github.com/apenwarr/redo\fR), and Rob Bocchino revised it
+(\fIhttp://github.com/bocchino/redo\fR).
+.SH "SEE ALSO"
+\fBredo\fR(1), \fBredo-ifcreate\fR(1), \fBredo-always\fR(1), \fBredo-stamp\fR(1)
+.SH AUTHOR
+Avery Pennarun (\fIapenwarr@gmail.com\fR)

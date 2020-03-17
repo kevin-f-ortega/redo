@@ -1,0 +1,39 @@
+.TH REDO-ALWAYS 1 2020-03-12 "Redo 0.11-119-g209cead" "User Commands"
+.ad l
+.nh
+.SH NAME
+redo-always - mark the current target as always needing to be rebuilt
+.SH SYNOPSIS
+redo-always
+.SH DESCRIPTION
+Normally redo-always is run from a .do file that has been
+executed by \fBredo\fR(1). See \fBredo\fR(1) for more details.
+.PP
+redo-always takes no parameters. It simply adds an
+"impossible" dependency to the current target, which
+ensures that the target will always be rebuilt if anyone
+runs \fBredo-ifchange targetname\fR.
+.PP
+Because of the way redo works, \fBredo-ifchange targetname\fR
+will only rebuild \fBtargetname\fR once per session. So if
+multiple targets depend on \fItargetname\fR and \fItargetname\fR
+has called redo-always, only the first target will cause it
+to be rebuilt. If the build cycle completes and a new one
+begins, it will be rebuilt exactly one more time.
+.PP
+Normally, any target that depends (directly or indirectly)
+on a sub-target that has called redo-always will also
+always need to rebuild, since one of its dependencies will
+always be out of date. To avoid this problem, redo-always is
+usually used along with \fBredo-stamp\fR(1).
+.SH REDO
+Part of the \fBredo\fR(1) suite.
+.SH CREDITS
+The original concept for \fBredo\fR is due to D. J. Bernstein
+(\fIhttp://cr.yp.to/redo.html\fR). Avery Pennarun created this implementation
+(\fIhttp://github.com/apenwarr/redo\fR), and Rob Bocchino revised it
+(\fIhttp://github.com/bocchino/redo\fR).
+.SH "SEE ALSO"
+\fBredo\fR(1), \fBredo-ifcreate\fR(1), \fBredo-ifchange\fR(1), \fBredo-stamp\fR(1)
+.SH AUTHOR
+Avery Pennarun (\fIapenwarr@gmail.com\fR)
