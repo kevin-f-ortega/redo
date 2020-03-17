@@ -56,7 +56,10 @@ To date, I have made the following improvements to apenwarr `redo`:
 
 10. Revised the code to be Python 3 compatible.
 
-*Note (January 2019):* It looks like apenwarr redo has fixed issues 1, 4, 5, 7, 
+11. Checked in the troff man pages and removed the dependence on md2man.
+It stopped working with the upgrade to Python 3.
+
+It looks like apenwarr redo has fixed issues 1, 4, 5, 7, 
 and 8, in part by merging code from this repository.
 It has also added some nice new features.
 It looks like 2, 3, and 6 are still not available in apenwarr redo.
