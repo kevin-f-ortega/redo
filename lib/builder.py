@@ -419,10 +419,10 @@ def _nice(t):
 
 def _print_cycle(target_list, t):
     n = len(target_list)
-    for i in xrange(0, n):
+    for i in range(0, n):
         if target_list[i] == t:
             break
-    for j in xrange(i, n):
+    for j in range(i, n):
         err('  %s\n' % target_list[j])
     err('  %s\n' % t)
 
