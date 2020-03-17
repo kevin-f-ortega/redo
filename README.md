@@ -104,17 +104,7 @@ To use this software, you need the following:
 
 2. A working Python 3 installation.
 
-3. The following Python packages, needed for generating the man pages:
-
-    `markdown`
-    `BeautifulSoup`
-
-  You can install these packages with `easy_install` or `pip`,
-  e.g., `easy_install markdown BeautifulSoup`.
-  If you don't have these packages installed, then you will be able to build and
-  install `redo`, but you won't be able to generate the man pages.
-
-4. A shell capable of running the `.do` files in this repository (e.g., `bash`).
+3. A shell capable of running the `.do` files in this repository (e.g., `bash`).
 Any modern Unix system should have such a shell, and the installation procedure
 should find it (see below).
 
